@@ -1,4 +1,4 @@
-import ic_quiz_random from "../../../assets/icons/ic_quiz_random.svg";
+import ic_quiz_random from "../../../assets/icons/student/main/ic_quiz_random.svg";
 
 const QuizShortcutItem = ({ title, quizAmount, questionsAmount, limit }) => {
   return (
