@@ -1,6 +1,8 @@
 import StudentSidebar from "../../components/sidebar/StudentSidebar";
 import RoundedBlock from "../../components/RoundedBlock";
 import ContinueStudyItem from "../../components/student/main/ContinueStudyItem";
+import ic_plus from "../../assets/icons/ic_plus.svg";
+import SearchBookItem from "../../components/student/main/SearchBookItem";
 
 const StudentMain = () => {
   const today = new Date();
@@ -22,7 +24,7 @@ const StudentMain = () => {
             오늘은 {formattedDate}입니다. 좋은 학습 되세요!
           </p>
         </header>
-        <section className="py-[32px] px-[24px]">
+        <section className="flex gap-[24px] py-[32px] px-[24px]">
           <RoundedBlock
             title="이어 학습"
             rightElement={
@@ -34,6 +36,28 @@ const StudentMain = () => {
             <div className="mt-[16px] w-full">
               <ContinueStudyItem>생물학 기초</ContinueStudyItem>
               <ContinueStudyItem>대수학 입문</ContinueStudyItem>
+            </div>
+          </RoundedBlock>
+          <RoundedBlock
+            className="flex-1 min-w-[512px]"
+            title="내 교재"
+            rightElement={
+              <span className="flex gap-[8px]">
+                <input
+                  type="text"
+                  placeholder="교재 검색"
+                  className="py-[11px] px-[13px] w-[255.5px] h-[41px] rounded-[8px] border border-[#CBD5E1] text-[16px]"
+                />
+                <button className="flex items-center gap-[13px] w-[86px] h-[40px] bg-[#13A4EC] rounded-[8px] text-[14px] text-white font-semibold cursor-pointer">
+                  <img src={ic_plus} alt="+" className="size-[14px]" />
+                  등록
+                </button>
+              </span>
+            }
+          >
+            <div className="flex gap-[20px] mt-[20px]">
+              <SearchBookItem title="생물학 기초" subject="과학" term="1학기" />
+              <SearchBookItem title="대수학 입문" subject="수학" term="1학기" />
             </div>
           </RoundedBlock>
         </section>
