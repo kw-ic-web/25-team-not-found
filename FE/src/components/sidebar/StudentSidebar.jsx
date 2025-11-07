@@ -7,8 +7,8 @@ const StudentSidebar = () => {
   const [activatedBtn, setActivatedBtn] = useState(0);
 
   return (
-    <aside className="w-[287px] h-screen border-r border-[#E2E8F0]">
-      <div className="flex items-center gap-[12px] pl-[20px] pt-[17.5px] pb-[18.5px] w-full">
+    <aside className="w-[287px] h-screen bg-white border-r border-[#E2E8F0]">
+      <div className="flex items-center gap-[12px] pl-[20px] pt-[17.5px] pb-[18.5px] w-full border-b border-[#E2E8F0]">
         <img src={ic_logo} alt="logo" />
         <h1 className="text-[20px] font-bold tracking-[-0.45px]">EduNote</h1>
       </div>
