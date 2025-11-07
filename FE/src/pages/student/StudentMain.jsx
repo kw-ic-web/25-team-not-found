@@ -1,9 +1,14 @@
 import StudentSidebar from "../../components/sidebar/StudentSidebar";
 import RoundedBlock from "../../components/RoundedBlock";
 import ContinueStudyItem from "../../components/student/main/ContinueStudyItem";
-import ic_plus from "../../assets/icons/ic_plus.svg";
+import ic_plus from "../../assets/icons/student/main/ic_plus.svg";
 import SearchBookItem from "../../components/student/main/SearchBookItem";
 import QuizShortcutItem from "../../components/student/main/QuizShortcutItem";
+import {
+  ic_bell,
+  ic_check,
+  ic_feedback,
+} from "../../assets/icons/student/main/recent_notice";
 
 const StudentMain = () => {
   const today = new Date();
@@ -71,7 +76,7 @@ const StudentMain = () => {
               </div>
             </RoundedBlock>
           </section>
-          <section>
+          <section className="flex gap-[24px]">
             <RoundedBlock
               className="w-[1048px] h-[190px]"
               title="퀴즈 바로가기"
@@ -100,6 +105,39 @@ const StudentMain = () => {
                   questionsAmount="10"
                   limit="15분"
                 />
+              </div>
+            </RoundedBlock>
+            <RoundedBlock
+              className="flex-1 h-[190px]"
+              title="최근 알림"
+              rightElement={
+                <button className="w-[80px] h-[28px] bg-[#F1F5F9] rounded-[8px] text-[14px] text-[#475569]">
+                  모두 확인
+                </button>
+              }
+            >
+              <div className="flex flex-col justify-between mt-[16px]">
+                <div className="flex items-center gap-[12px]">
+                  <img src={ic_bell} alt="" />
+                  <p className="text-[14px] text-[#0F172A]">
+                    <span className="font-bold">생물학 기초</span> 과제 마감이
+                    2일 남았어요.
+                  </p>
+                </div>
+                <div className="flex items-center gap-[12px]">
+                  <img src={ic_feedback} alt="" />
+                  <p className="text-[14px] text-[#0F172A]">
+                    <span className="font-bold">대수학 입문</span> 3주차 수업
+                    완료! 훌륭해요 👏
+                  </p>
+                </div>
+                <div className="flex items-center gap-[12px]">
+                  <img src={ic_check} alt="" />
+                  <p className="text-[14px] text-[#0F172A]">
+                    교사로부터 <span className="font-bold">피드백</span>이
+                    도착했어요.
+                  </p>
+                </div>
               </div>
             </RoundedBlock>
           </section>
