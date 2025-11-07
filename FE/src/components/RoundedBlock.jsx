@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 
 /**
  * RoundedBlock Component
@@ -19,7 +19,7 @@ const RoundedBlock = ({
   const base =
     "p-[25px] w-[512px] h-[353px] rounded-[16px] bg-white border border-[#E2E8F0] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]";
   return (
-    <div className={clsx(base, className)} {...props}>
+    <div className={twMerge(base, className)} {...props}>
       <div className="flex justify-between w-full">
         <h2 className="text-[18px] font-bold text-[#0F172A]">{title}</h2>
         {rightElement}
