@@ -22,7 +22,7 @@ const StudentMain = () => {
   return (
     <main className="flex w-full h-full bg-[#F6F7F8]">
       <StudentSidebar />
-      <section className="py-[32px] px-[24px] w-full">
+      <section className="py-[32px] px-[24px]">
         <header className="flex flex-col gap-[8px] pl-[24px] py-[40px] w-full border-b border-[#E2E8F0]">
           <h1 className="text-[30px] text-[#0F172A] font-bold tracking-[-0.75px]">
             안녕하세요, <span className="text-[#13A4EC]">학생님</span>👋
