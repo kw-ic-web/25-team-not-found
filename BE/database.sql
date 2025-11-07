@@ -373,3 +373,42 @@ CREATE TRIGGER trigger_user_annotations_updated_at
   BEFORE UPDATE ON user_annotations
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+-- =========================================================
+-- 추가: 학생 페이지 읽기 기록 (page_reads)
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS page_reads (
+  read_id       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       INTEGER  NOT NULL,
+  page_id       UUID     NOT NULL,
+  first_read_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_read_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  read_count    INTEGER  NOT NULL DEFAULT 1
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_page_reads_user_page 
+  ON page_reads(user_id, page_id);
+
+CREATE INDEX IF NOT EXISTS idx_page_reads_user 
+  ON page_reads(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_page_reads_page 
+  ON page_reads(page_id);
+
+COMMENT ON TABLE page_reads IS '학생이 특정 페이지를 읽은 누적 기록';
+COMMENT ON COLUMN page_reads.read_count IS '해당 페이지에 대한 누적 읽기 횟수';
+COMMENT ON COLUMN page_reads.first_read_at IS '최초 읽기 시각';
+COMMENT ON COLUMN page_reads.last_read_at  IS '마지막 읽기 시각';
+
+ALTER TABLE page_reads 
+  ADD CONSTRAINT fk_page_reads_user
+  FOREIGN KEY (user_id) 
+  REFERENCES users(user_id) 
+  ON DELETE CASCADE;
+
+ALTER TABLE page_reads 
+  ADD CONSTRAINT fk_page_reads_page
+  FOREIGN KEY (page_id) 
+  REFERENCES textbook_pages(page_id) 
+  ON DELETE CASCADE;
