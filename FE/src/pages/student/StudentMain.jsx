@@ -9,6 +9,7 @@ import {
   ic_check,
   ic_feedback,
 } from "../../assets/icons/student/main/recent_notice";
+import MyProgressSummaryItem from "../../components/student/main/MyProgressSummaryItem";
 
 const StudentMain = () => {
   const today = new Date();
@@ -140,6 +141,40 @@ const StudentMain = () => {
                 </div>
               </div>
             </RoundedBlock>
+          </section>
+          <section className="flex gap-[24px]">
+            <RoundedBlock
+              className="flex-1 min-w-[512px] h-[238.5px]"
+              title="나의 진행률 요약"
+              rightElement={
+                <button className="text-[14px] text-[#13A4EC] font-semibold cursor-pointer">
+                  학습 대시보드 →
+                </button>
+              }
+            >
+              <div className="flex flex-col gap-[20px] mt-[24px]">
+                <div className="flex gap-[16px]">
+                  <MyProgressSummaryItem title="완료한 수업" amount="12 / 20" />
+                  <MyProgressSummaryItem title="퀴즈 평균점" amount="82점" />
+                </div>
+                <div className="flex gap-[16px]">
+                  <MyProgressSummaryItem
+                    title="이번 주 학습 시간"
+                    amount="4.5h / 6h"
+                  />
+                  <MyProgressSummaryItem title="과제 제출" amount="3 / 5" />
+                </div>
+              </div>
+            </RoundedBlock>
+            <RoundedBlock
+              className="w-[512px] h-[238.5px]"
+              title="주간 학습 활동"
+              rightElement={
+                <button className="w-[80px] h-[28px] bg-[#F1F5F9] rounded-[8px] text-[14px] text-[#475569]">
+                  최근 7일
+                </button>
+              }
+            />
           </section>
         </section>
       </section>
