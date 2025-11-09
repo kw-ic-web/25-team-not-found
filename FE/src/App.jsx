@@ -3,6 +3,7 @@ import DefaultLayout from "./layouts/DefaultLayout";
 import StudentMain from "./pages/student/StudentMain";
 import NavBarLayout from "./layouts/NavBarLayout";
 import QuizSolve from "./pages/student/QuizSolve";
+import EnterClass from "./pages/student/EnterClass";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
               {
                 path: "quiz",
                 element: <QuizSolve />,
+              },
+              {
+                path: "enter-class",
+                element: <EnterClass />,
               },
             ],
           },
