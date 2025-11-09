@@ -4,6 +4,7 @@ import StudentMain from "./pages/student/StudentMain";
 import NavBarLayout from "./layouts/NavBarLayout";
 import QuizSolve from "./pages/student/QuizSolve";
 import EnterClass from "./pages/student/EnterClass";
+import StudentDashboard from "./pages/student/StudentDashboard";
 
 const router = createBrowserRouter([
   {
@@ -22,7 +23,10 @@ const router = createBrowserRouter([
             element: <StudentMain />,
           },
           {
-            index: false,
+            path: "dashboard",
+            element: <StudentDashboard />,
+          },
+          {
             element: <NavBarLayout />,
             children: [
               {
