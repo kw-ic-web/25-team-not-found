@@ -1,21 +1,46 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import DefaultLayout from "./layouts/DefaultLayout";
+
+// 레이아웃
+import DefaultLayout from "./layouts/DefaultLayout";   
+import MainAside from "./layouts/MainAside";           
+
+// 페이지
+import TeacherQuiz from "./pages/TeacherQuiz";
+import TeacherLecture from "./pages/TeacherLecture";
+import TeacherStudent from "./pages/TeacherStudent";
+import TeacherMain from "./pages/TeacherMain";
+import TeacherBook from "./pages/TeacherBook";
+import Login from "./pages/Login";
+import Lecture from "./pages/Lecture";
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <DefaultLayout />,
+    path: "/teacher",
+    element: <MainAside />, 
     children: [
-      {
-        index: true,
-        element: <h1>Home</h1>,
-      },
+      
     ],
   },
+
+  {
+    path: "/",
+    element: <DefaultLayout />, 
+    children: [
+      { index: true, element: <Login /> },               
+      { path: "login", element: <Login /> },             
+      { path: "teacher/main", element: <TeacherMain /> }, 
+      { path: "lecture", element: <Lecture /> },   
+      
+    ],
+    
+  },
+  { path: "teacher/quiz", element: <TeacherQuiz /> },
+  { path: "teacher/student", element: <TeacherStudent /> },
+  { path: "teacher/lecture", element: <TeacherLecture /> },
+  { path: "teacher/book", element: <TeacherBook /> },
 ]);
 
-function App() {
+
+export default function App() {
   return <RouterProvider router={router} />;
 }
-
-export default App;

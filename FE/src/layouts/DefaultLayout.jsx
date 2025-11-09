@@ -1,13 +1,15 @@
-import { Outlet } from "react-router-dom";
 import DefaultNavBar from "../components/DefaultNavBar";
+import { Outlet } from "react-router-dom";
 
-const DefaultLayout = () => {
+export default function DefaultLayout() {
   return (
-    <main className="w-screen min-h-screen mx-auto">
-      <DefaultNavBar />
-      <Outlet />
-    </main>
-  );
-};
+    <div className="flex flex-col min-h-screen bg-gray-50">
+         <DefaultNavBar />
 
-export default DefaultLayout;
+
+      <main className="flex-1 p-4">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
