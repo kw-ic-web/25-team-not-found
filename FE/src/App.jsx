@@ -5,6 +5,7 @@ import NavBarLayout from "./layouts/NavBarLayout";
 import QuizSolve from "./pages/student/QuizSolve";
 import EnterClass from "./pages/student/EnterClass";
 import StudentDashboard from "./pages/student/StudentDashboard";
+import Landing from "./pages/Landing";
 
 const router = createBrowserRouter([
   {
@@ -12,8 +13,13 @@ const router = createBrowserRouter([
     element: <DefaultLayout />,
     children: [
       {
-        index: true,
-        element: <h1>Home</h1>,
+        element: <NavBarLayout />,
+        children: [
+          {
+            index: true,
+            element: <Landing />,
+          },
+        ],
       },
       {
         path: "student",
