@@ -4,6 +4,58 @@ This document outlines the API endpoints for the application.
 
 ---
 
+# Auth
+
+### POST /api/auth/register
+
+- **Description**: Registers a new user.
+- **Authentication**: ❌
+- **Request Body**:
+    ```json
+    {
+        "username": "testuser",
+        "password": "password123",
+        "nickname": "Test User"
+    }
+    ```
+- **Response (201)**
+    ```json
+    {
+        "user_id": 1,
+        "username": "testuser",
+        "nickname": "Test User",
+        "created_at": "2025-11-12T12:00:00.000Z"
+    }
+    ```
+
+### POST /api/auth/login
+
+- **Description**: Logs in a user and returns a JWT token.
+- **Authentication**: ❌
+- **Request Body**:
+    ```json
+    {
+        "username": "testuser",
+        "password": "password123"
+    }
+    ```
+- **Response (200)**
+    ```json
+    {
+        "code": 200,
+        "message": "토큰이 발급되었습니다.",
+        "access_token": "your_jwt_token",
+        "token_type": "Bearer",
+        "user": {
+            "user_id": 1,
+            "username": "testuser",
+            "nickname": "Test User"
+        }
+    }
+    ```
+
+---
+
 # Annotations
 
 ### GET /api/annotations
@@ -117,6 +169,51 @@ This document outlines the API endpoints for the application.
 
 ---
 
+# Enrollments
+
+### POST /api/enrollments
+
+- **Description**: Enrolls a user in a textbook.
+- **Authentication**: ✅ (Bearer)
+- **Request Body**:
+    ```json
+    {
+        "textbook_id": 1,
+        "role": "student"
+    }
+    ```
+- **Response (201)**
+    ```json
+    {
+        "enrollment_id": 1,
+        "role": "student",
+        "created_at": "2025-11-12T12:00:00.000Z"
+    }
+    ```
+
+---
+
+# Learn
+
+### POST /api/learn/reads
+
+- **Description**: Records that a user has read a page.
+- **Authentication**: ✅ (Bearer)
+- **Request Body**:
+    ```json
+    {
+        "page_id": 1
+    }
+    ```
+- **Response (201)**
+    ```json
+    {
+        "read_id": 1
+    }
+    ```
+
+---
+
 # Quizzes
 
 ### GET /api/quizzes/:quiz_id/questions
@@ -174,6 +271,63 @@ This document outlines the API endpoints for the application.
 
 ---
 
+# Quiz Management
+
+### POST /api/quiz-managements
+
+- **Description**: Creates a new quiz.
+- **Authentication**: ✅ (Bearer)
+- **Request Body**:
+    ```json
+    {
+        "textbook_id": 1,
+        "version": 1,
+        "page_number": 1,
+        "title": "New Quiz",
+        "questions": [
+            {
+                "question_type": "multiple_choice",
+                "question_content": "What is 2+2?",
+                "options": ["3", "4", "5"],
+                "correct_answer": "4",
+                "explanation": "Because it is."
+            }
+        ]
+    }
+    ```
+- **Response (201)**
+    ```json
+    {
+        "quiz_id": 1,
+        "title": "New Quiz",
+        "question_count": 1
+    }
+    ```
+
+### GET /api/quiz-managements/:page_id
+
+- **Description**: Retrieves quizzes for a specific page.
+- **Authentication**: ✅ (Bearer)
+- **Response (200)**
+    ```json
+    [
+        {
+            "quiz_id": 1,
+            "title": "New Quiz",
+            "created_at": "2025-11-12T12:00:00.000Z",
+            "question_id": 1,
+            "question_type": "multiple_choice",
+            "question_content": "What is 2+2?",
+            "options": ["3", "4", "5"],
+            "correct_answer": "4",
+            "explanation": "Because it is.",
+            "question_order": 1
+        }
+    ]
+    ```
+
+---
+
 # Session
 
 ### POST /api/session/join
@@ -200,20 +354,135 @@ This document outlines the API endpoints for the application.
 
 ---
 
-# Textbook
+# Teacher
 
-### GET /api/textbooks/:textbook_id/pages/:page_number
+### GET /api/teacher/:textbookId/students
 
-- **Description**: Retrieves the content of a specific page in a textbook.
+- **Description**: Retrieves a list of students for a specific textbook.
 - **Authentication**: ✅ (Bearer)
+- **Query Parameters**:
+    - `version` (integer): The version of the textbook.
+    - `q` (string): Search query for student name or username.
+    - `sort` (string): `recent`, `progress`, or `name`.
+    - `order` (string): `asc` or `desc`.
+    - `limit` (integer): Number of results to return.
+    - `offset` (integer): Offset for pagination.
 - **Response (200)**
     ```json
     {
-        "success": true,
-        "data": {
+        "textbook_id": "some-uuid",
+        "version": 1,
+        "total_pages": 10,
+        "total_students": 1,
+        "students": [
+            {
+                "user_id": 1,
+                "username": "student1",
+                "nickname": "Student One",
+                "last_accessed": "2025-11-12T12:00:00.000Z",
+                "progress_pct": 50.0,
+                "latest_score": null
+            }
+        ]
+    }
+    ```
+
+---
+
+# Textbook
+
+### POST /api/textbooks
+
+- **Description**: Creates a new textbook.
+- **Authentication**: ✅ (Bearer)
+- **Request Body**:
+    ```json
+    {
+        "title": "New Textbook"
+    }
+    ```
+- **Response (201)**
+    ```json
+    {
+        "textbookId": "some-uuid",
+        "title": "New Textbook",
+        "version": {
+            "version_id": "some-uuid",
+            "version": 1,
+            "is_published": false,
+            "created_at": "2025-11-12T12:00:00.000Z"
+        }
+    }
+    ```
+
+### GET /api/textbooks/mine
+
+- **Description**: Retrieves a list of textbooks created by the user.
+- **Authentication**: ✅ (Bearer)
+- **Response (200)**
+    ```json
+    [
+        {
+            "textbook_id": "some-uuid",
+            "title": "New Textbook",
+            "created_at": "2025-11-12T12:00:00.000Z",
+            "latest_version": 1
+        }
+    ]
+    ```
+
+### POST /api/textbooks/:textbookId/versions
+
+- **Description**: Creates a new version of a textbook.
+- **Authentication**: ✅ (Bearer)
+- **Request Body**:
+    ```json
+    {
+        "from_version": 1,
+        "publish": false
+    }
+    ```
+- **Response (201)**
+    ```json
+    {
+        "version_id": "some-uuid",
+        "version": 2,
+        "is_published": false,
+        "created_at": "2025-11-12T12:00:00.000Z"
+    }
+    ```
+
+### GET /api/textbooks/:textbookId/versions/:version/pages
+
+- **Description**: Retrieves the pages of a specific textbook version.
+- **Authentication**: ✅ (Bearer)
+- **Response (200)**
+    ```json
+    [
+        {
             "page_id": 1,
             "page_number": 1,
             "content": "..."
         }
+    ]
+    ```
+
+### POST /api/textbooks/:textbookId/versions/:version/pages
+
+- **Description**: Creates a new page in a textbook version.
+- **Authentication**: ✅ (Bearer)
+- **Request Body**:
+    ```json
+    {
+        "page_number": 2,
+        "content": "..."
+    }
+    ```
+- **Response (201)**
+    ```json
+    {
+        "page_id": 2,
+        "page_number": 2,
+        "content": "..."
     }
     ```
