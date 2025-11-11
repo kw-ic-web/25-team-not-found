@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 // API Routes
-app.use('/api/v1', apiV1Router);
+app.use('/', apiV1Router);
 
 // Global Error Handler (should be the last middleware)
 app.use(errorHandler);
