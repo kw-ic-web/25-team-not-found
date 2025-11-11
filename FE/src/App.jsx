@@ -6,6 +6,7 @@ import QuizSolve from "./pages/student/QuizSolve";
 import EnterClass from "./pages/student/EnterClass";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import Landing from "./pages/Landing";
+import RoleSelect from "./pages/RoleSelect";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <Landing />,
+          },
+          {
+            path: "role-select",
+            element: <RoleSelect />,
           },
         ],
       },
