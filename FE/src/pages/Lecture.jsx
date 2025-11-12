@@ -173,7 +173,7 @@ export default function Lecture() {
 
         {/* 세션 생성 결과 
         <div className="mb-6">
-          {errorMsg && <p className="text-red-600 text-sm">❌ {errorMsg}</p>}
+          {errorMsg && <p className="text-red-600 text-sm"> {errorMsg}</p>}
           {sessionResult && (
             <div className="text-sm text-slate-700 bg-slate-50 border rounded-lg p-3">
               <div className="font-semibold mb-1">세션 생성 결과</div>

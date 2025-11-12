@@ -77,10 +77,9 @@ const router = createBrowserRouter([
       },
       {
         path: "teacher",
-        element: <MainAside />,
         children: [
           {
-            index: "main",
+            index: "true",
             element: <TeacherMain />,
           },
           {
