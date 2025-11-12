@@ -3,11 +3,11 @@ import { Outlet } from "react-router-dom";
 
 export default function DefaultLayout() {
   return (
-    <>
+    <div className="flex flex-col min-h-screen bg-gray-50">
       <DefaultNavBar />
-      <div className="w-screen min-h-screen mx-auto">
+      <main className="flex-1 p-4">
         <Outlet />
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

@@ -1,12 +1,25 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+// 레이아웃
+import DefaultLayout from "./layouts/DefaultLayout";
+import DefaultLayoutV2 from "./layouts/DefaultLayoutV2";
 import StudentDefaultLayout from "./layouts/StudentDefaultLayout";
+import MainAside from "./layouts/MainAside";
+
+// 페이지
+import TeacherQuiz from "./pages/TeacherQuiz";
+import TeacherLecture from "./pages/TeacherLecture";
+import TeacherStudent from "./pages/TeacherStudent";
+import TeacherMain from "./pages/TeacherMain";
+import TeacherBook from "./pages/TeacherBook";
+import Login from "./pages/Login";
+import Lecture from "./pages/Lecture";
 import StudentMain from "./pages/student/StudentMain";
 import QuizSolve from "./pages/student/QuizSolve";
 import EnterClass from "./pages/student/EnterClass";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import Landing from "./pages/Landing";
 import RoleSelect from "./pages/RoleSelect";
-import DefaultLayoutV2 from "./layouts/DefaultLayoutV2";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +37,16 @@ const router = createBrowserRouter([
             path: "role-select",
             element: <RoleSelect />,
           },
+        ],
+      },
+      {
+        element: <DefaultLayout />,
+        children: [
+          {
+            index: true,
+            element: <Login />,
+          },
+          { path: "lecture", element: <Lecture /> },
         ],
       },
       {
@@ -52,12 +75,36 @@ const router = createBrowserRouter([
           },
         ],
       },
+      {
+        path: "teacher",
+        element: <MainAside />,
+        children: [
+          {
+            index: "main",
+            element: <TeacherMain />,
+          },
+          {
+            path: "quiz",
+            element: <TeacherQuiz />,
+          },
+          {
+            path: "student",
+            element: <TeacherStudent />,
+          },
+          {
+            path: "lecture",
+            element: <TeacherLecture />,
+          },
+          {
+            path: "book",
+            element: <TeacherBook />,
+          },
+        ],
+      },
     ],
   },
 ]);
 
-function App() {
+export default function App() {
   return <RouterProvider router={router} />;
 }
-
-export default App;
