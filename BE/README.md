@@ -1,488 +1,488 @@
-# API Documentation
+# API 명세서
 
-This document outlines the API endpoints for the application.
+이 문서는 애플리케이션의 API 엔드포인트를 설명합니다.
 
 ---
 
-# Auth
+# Auth (인증)
 
 ### POST /auth/register
 
-- **Description**: Registers a new user.
-- **Authentication**: ❌
-- **Request Body**:
-    ```json
-    {
-        "username": "testuser",
-        "password": "password123",
-        "nickname": "Test User"
-    }
-    ```
-- **Response (201)**
-    ```json
-    {
-        "user_id": 1,
-        "username": "testuser",
-        "nickname": "Test User",
-        "created_at": "2025-11-12T12:00:00.000Z"
-    }
-    ```
+- **설명**: 새로운 사용자를 등록(회원가입)합니다.
+- **인증**: ❌
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "username": "testuser",
+        "password": "password123",
+        "nickname": "Test User"
+    }
+    ```
+- **응답 (201)**
+    ```json
+    {
+        "user_id": 1,
+        "username": "testuser",
+        "nickname": "Test User",
+        "created_at": "2025-11-12T12:00:00.000Z"
+    }
+    ```
 
 ### POST /auth/login
 
-- **Description**: Logs in a user and returns a JWT token.
-- **Authentication**: ❌
-- **Request Body**:
-    ```json
-    {
-        "username": "testuser",
-        "password": "password123"
-    }
-    ```
-- **Response (200)**
-    ```json
-    {
-        "code": 200,
-        "message": "토큰이 발급되었습니다.",
-        "access_token": "your_jwt_token",
-        "token_type": "Bearer",
-        "user": {
-            "user_id": 1,
-            "username": "testuser",
-            "nickname": "Test User"
-        }
-    }
-    ```
+- **설명**: 사용자 로그인을 수행하고 JWT 토큰을 반환합니다.
+- **인증**: ❌
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "username": "testuser",
+        "password": "password123"
+    }
+    ```
+- **응답 (200)**
+    ```json
+    {
+        "code": 200,
+        "message": "토큰이 발급되었습니다.",
+        "access_token": "your_jwt_token",
+        "token_type": "Bearer",
+        "user": {
+            "user_id": 1,
+            "username": "testuser",
+            "nickname": "Test User"
+        }
+    }
+    ```
 
 ---
 
-# Annotations
+# Annotations (주석)
 
 ### GET /annotations
 
-- **Description**: Retrieves annotations for a specific page or textbook.
-- **Authentication**: ✅ (Bearer)
-- **Query Parameters**:
-    - `page_id` (integer): The ID of the page to get annotations for.
-    - `textbook_id` (integer): The ID of the textbook to get annotations for.
-    *(Note: Either `page_id` or `textbook_id` must be provided)*
-- **Response (200)**
-    ```json
-    {
-        "success": true,
-        "data": [
-            {
-                "annotation_id": 1,
-                "user_id": 1,
-                "page_id": 1,
-                "annotation_type": "highlight",
-                "content": "This is a highlighted text.",
-                "location_data": {},
-                "created_at": "2025-11-07T12:00:00.000Z"
-            }
-        ]
-    }
-    ```
+- **설명**: 특정 페이지 또는 교재(Textbook)에 대한 주석을 조회합니다.
+- **인증**: ✅ (Bearer)
+- **쿼리 파라미터 (Query Parameters)**:
+    - `page_id` (integer): 주석을 조회할 페이지의 ID.
+    - `textbook_id` (integer): 주석을 조회할 교재의 ID.
+    *(참고: `page_id` 또는 `textbook_id` 중 하나는 반드시 제공되어야 합니다)*
+- **응답 (200)**
+    ```json
+    {
+        "success": true,
+        "data": [
+            {
+                "annotation_id": 1,
+                "user_id": 1,
+                "page_id": 1,
+                "annotation_type": "highlight",
+                "content": "This is a highlighted text.",
+                "location_data": {},
+                "created_at": "2025-11-07T12:00:00.000Z"
+            }
+        ]
+    }
+    ```
 
 ### POST /annotations
 
-- **Description**: Creates a new annotation.
-- **Authentication**: ✅ (Bearer)
-- **Request Body**:
-    ```json
-    {
-        "page_id": 1,
-        "annotation_type": "memo",
-        "content": "This is a memo.",
-        "location_data": {}
-    }
-    ```
-- **Response (201)**
-    ```json
-    {
-        "success": true,
-        "data": {
-            "annotation_id": 2,
-            "user_id": 1,
-            "page_id": 1,
-            "annotation_type": "memo",
-            "content": "This is a memo.",
-            "location_data": {},
-            "created_at": "2025-11-07T12:05:00.000Z"
-        }
-    }
-    ```
+- **설명**: 새로운 주석을 생성합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "page_id": 1,
+        "annotation_type": "memo",
+        "content": "This is a memo.",
+        "location_data": {}
+    }
+    ```
+- **응답 (201)**
+    ```json
+    {
+        "success": true,
+        "data": {
+            "annotation_id": 2,
+            "user_id": 1,
+            "page_id": 1,
+            "annotation_type": "memo",
+            "content": "This is a memo.",
+            "location_data": {},
+            "created_at": "2025-11-07T12:05:00.000Z"
+        }
+    }
+    ```
 
 ### PUT /annotations/:annotation_id
 
-- **Description**: Updates an existing annotation.
-- **Authentication**: ✅ (Bearer)
-- **Request Body**:
-    ```json
-    {
-        "page_id": 1,
-        "annotation_type": "memo",
-        "content": "This is an updated memo.",
-        "location_data": {}
-    }
-    ```
-- **Response (200)**
-    ```json
-    {
-        "success": true,
-        "data": {
-            "annotation_id": 2,
-            "user_id": 1,
-            "page_id": 1,
-            "annotation_type": "memo",
-            "content": "This is an updated memo.",
-            "location_data": {},
-            "created_at": "2025-11-07T12:05:00.000Z"
-        }
-    }
-    ```
+- **설명**: 기존 주석을 수정합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "page_id": 1,
+        "annotation_type": "memo",
+        "content": "This is an updated memo.",
+        "location_data": {}
+    }
+    ```
+- **응답 (200)**
+    ```json
+    {
+        "success": true,
+        "data": {
+            "annotation_id": 2,
+            "user_id": 1,
+            "page_id": 1,
+            "annotation_type": "memo",
+            "content": "This is an updated memo.",
+            "location_data": {},
+            "created_at": "2025-11-07T12:05:00.000Z"
+        }
+    }
+    ```
 
 ### DELETE /annotations/:annotation_id
 
-- **Description**: Deletes an annotation.
-- **Authentication**: ✅ (Bearer)
-- **Response (204)**: No content.
+- **설명**: 주석을 삭제합니다.
+- **인증**: ✅ (Bearer)
+- **응답 (204)**: 내용 없음 (No content).
 
 ---
 
-# Dashboard
+# Dashboard (대시보드)
 
 ### GET /dashboard
 
-- **Description**: Retrieves dashboard data for the logged-in user.
-- **Authentication**: ✅ (Bearer)
-- **Response (200)**
-    ```json
-    {
-        "success": true,
-        "data": {
-            "recent_textbooks": [],
-            "ongoing_sessions": []
-        }
-    }
-    ```
+- **설명**: 로그인한 사용자의 대시보드 데이터를 조회합니다.
+- **인증**: ✅ (Bearer)
+- **응답 (200)**
+    ```json
+    {
+        "success": true,
+        "data": {
+            "recent_textbooks": [],
+            "ongoing_sessions": []
+        }
+    }
+    ```
 
 ---
 
-# Enrollments
+# Enrollments (수강 등록)
 
 ### POST /enrollments
 
-- **Description**: Enrolls a user in a textbook.
-- **Authentication**: ✅ (Bearer)
-- **Request Body**:
-    ```json
-    {
-        "textbook_id": 1,
-        "role": "student"
-    }
-    ```
-- **Response (201)**
-    ```json
-    {
-        "enrollment_id": 1,
-        "role": "student",
-        "created_at": "2025-11-12T12:00:00.000Z"
-    }
-    ```
+- **설명**: 사용자를 교재에 등록(수강 신청)합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "textbook_id": 1,
+        "role": "student"
+    }
+    ```
+- **응답 (201)**
+    ```json
+    {
+        "enrollment_id": 1,
+        "role": "student",
+        "created_at": "2025-11-12T12:00:00.000Z"
+    }
+    ```
 
 ---
 
-# Learn
+# Learn (학습)
 
 ### POST /learn/reads
 
-- **Description**: Records that a user has read a page.
-- **Authentication**: ✅ (Bearer)
-- **Request Body**:
-    ```json
-    {
-        "page_id": 1
-    }
-    ```
-- **Response (201)**
-    ```json
-    {
-        "read_id": 1
-    }
-    ```
+- **설명**: 사용자가 특정 페이지를 읽었음을 기록합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "page_id": 1
+    }
+    ```
+- **응답 (201)**
+    ```json
+    {
+        "read_id": 1
+    }
+    ```
 
 ---
 
-# Quizzes
+# Quizzes (퀴즈)
 
 ### GET /quizzes/:quiz_id/questions
 
-- **Description**: Retrieves the questions for a specific quiz.
-- **Authentication**: ✅ (Bearer)
-- **Response (200)**
-    ```json
-    {
-        "success": true,
-        "data": [
-            {
-                "question_id": 1,
-                "question_type": "multiple_choice",
-                "question_content": "What is 2+2?",
-                "options": ["3", "4", "5"],
-                "question_order": 1
-            }
-        ]
-    }
-    ```
+- **설명**: 특정 퀴즈의 문제 목록을 조회합니다.
+- **인증**: ✅ (Bearer)
+- **응답 (200)**
+    ```json
+    {
+        "success": true,
+        "data": [
+            {
+                "question_id": 1,
+                "question_type": "multiple_choice",
+                "question_content": "What is 2+2?",
+                "options": ["3", "4", "5"],
+                "question_order": 1
+            }
+        ]
+    }
+    ```
 
 ### POST /quizzes/:quiz_id/submit
 
-- **Description**: Submits answers for a quiz.
-- **Authentication**: ✅ (Bearer)
-- **Request Body**:
-    ```json
-    {
-        "answers": [
-            {
-                "question_id": 1,
-                "student_answer": "4"
-            }
-        ]
-    }
-    ```
-- **Response (200)**
-    ```json
-    {
-        "success": true,
-        "data": {
-            "submission_id": 1,
-            "score": 100,
-            "results": [
-                {
-                    "question_id": 1,
-                    "student_answer": "4",
-                    "is_correct": true
-                }
-            ]
-        }
-    }
-    ```
+- **설명**: 퀴즈의 답안을 제출합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "answers": [
+            {
+                "question_id": 1,
+                "student_answer": "4"
+            }
+        ]
+    }
+    ```
+- **응답 (200)**
+    ```json
+    {
+        "success": true,
+        "data": {
+            "submission_id": 1,
+            "score": 100,
+            "results": [
+                {
+                    "question_id": 1,
+                    "student_answer": "4",
+                    "is_correct": true
+                }
+            ]
+        }
+    }
+    ```
 
 ---
 
-# Quiz Management
+# Quiz Management (퀴즈 관리)
 
 ### POST /quiz-managements
 
-- **Description**: Creates a new quiz.
-- **Authentication**: ✅ (Bearer)
-- **Request Body**:
-    ```json
-    {
-        "textbook_id": 1,
-        "version": 1,
-        "page_number": 1,
-        "title": "New Quiz",
-        "questions": [
-            {
-                "question_type": "multiple_choice",
-                "question_content": "What is 2+2?",
-                "options": ["3", "4", "5"],
-                "correct_answer": "4",
-                "explanation": "Because it is."
-            }
-        ]
-    }
-    ```
-- **Response (201)**
-    ```json
-    {
-        "quiz_id": 1,
-        "title": "New Quiz",
-        "question_count": 1
-    }
-    ```
+- **설명**: 새로운 퀴즈를 생성합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "textbook_id": 1,
+        "version": 1,
+        "page_number": 1,
+        "title": "New Quiz",
+        "questions": [
+            {
+                "question_type": "multiple_choice",
+                "question_content": "What is 2+2?",
+                "options": ["3", "4", "5"],
+                "correct_answer": "4",
+                "explanation": "Because it is."
+            }
+        ]
+    }
+    ```
+- **응답 (201)**
+    ```json
+    {
+        "quiz_id": 1,
+        "title": "New Quiz",
+        "question_count": 1
+    }
+    ```
 
 ### GET /quiz-managements/:page_id
 
-- **Description**: Retrieves quizzes for a specific page.
-- **Authentication**: ✅ (Bearer)
-- **Response (200)**
-    ```json
-    [
-        {
-            "quiz_id": 1,
-            "title": "New Quiz",
-            "created_at": "2025-11-12T12:00:00.000Z",
-            "question_id": 1,
-            "question_type": "multiple_choice",
-            "question_content": "What is 2+2?",
-            "options": ["3", "4", "5"],
-            "correct_answer": "4",
-            "explanation": "Because it is.",
-            "question_order": 1
-        }
-    ]
-    ```
+- **설명**: 특정 페이지에 연결된 퀴즈 목록을 조회합니다.
+- **인증**: ✅ (Bearer)
+- **응답 (200)**
+    ```json
+    [
+        {
+            "quiz_id": 1,
+            "title": "New Quiz",
+            "created_at": "2025-11-12T12:00:00.000Z",
+            "question_id": 1,
+            "question_type": "multiple_choice",
+            "question_content": "What is 2+2?",
+            "options": ["3", "4", "5"],
+            "correct_answer": "4",
+            "explanation": "Because it is.",
+            "question_order": 1
+        }
+    ]
+    ```
 
 ---
 
-# Session
+# Session (세션)
 
 ### POST /session/join
 
-- **Description**: Joins a session using an invitation code.
-- **Authentication**: ✅ (Bearer)
-- **Request Body**:
-    ```json
-    {
-        "invitation_code": "some-code"
-    }
-    ```
-- **Response (200)**
-    ```json
-    {
-        "success": true,
-        "data": {
-            "session_id": 1,
-            "session_name": "Study Group",
-            "textbook_id": 1
-        }
-    }
-    ```
+- **설명**: 초대 코드를 사용하여 세션(학습 그룹)에 참여합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "invitation_code": "some-code"
+    }
+    ```
+- **응답 (200)**
+    ```json
+    {
+        "success": true,
+        "data": {
+            "session_id": 1,
+            "session_name": "Study Group",
+            "textbook_id": 1
+        }
+    }
+    ```
 
 ---
 
-# Teacher
+# Teacher (교사 기능)
 
 ### GET /teacher/:textbookId/students
 
-- **Description**: Retrieves a list of students for a specific textbook.
-- **Authentication**: ✅ (Bearer)
-- **Query Parameters**:
-    - `version` (integer): The version of the textbook.
-    - `q` (string): Search query for student name or username.
-    - `sort` (string): `recent`, `progress`, or `name`.
-    - `order` (string): `asc` or `desc`.
-    - `limit` (integer): Number of results to return.
-    - `offset` (integer): Offset for pagination.
-- **Response (200)**
-    ```json
-    {
-        "textbook_id": "some-uuid",
-        "version": 1,
-        "total_pages": 10,
-        "total_students": 1,
-        "students": [
-            {
-                "user_id": 1,
-                "username": "student1",
-                "nickname": "Student One",
-                "last_accessed": "2025-11-12T12:00:00.000Z",
-                "progress_pct": 50.0,
-                "latest_score": null
-            }
-        ]
-    }
-    ```
+- **설명**: 특정 교재의 학생 목록을 조회합니다.
+- **인증**: ✅ (Bearer)
+- **쿼리 파라미터 (Query Parameters)**:
+    - `version` (integer): 교재의 버전.
+    - `q` (string): 학생 이름 또는 사용자명 검색 쿼리.
+    - `sort` (string): 정렬 기준 (`recent`: 최신순, `progress`: 진도율순, `name`: 이름순).
+    - `order` (string): 정렬 순서 (`asc`: 오름차순 또는 `desc`: 내림차순).
+    - `limit` (integer): 반환할 결과의 개수.
+    - `offset` (integer): 페이지네이션을 위한 오프셋.
+- **응답 (200)**
+    ```json
+    {
+        "textbook_id": "some-uuid",
+        "version": 1,
+        "total_pages": 10,
+        "total_students": 1,
+        "students": [
+            {
+                "user_id": 1,
+                "username": "student1",
+                "nickname": "Student One",
+                "last_accessed": "2025-11-12T12:00:00.000Z",
+                "progress_pct": 50.0,
+                "latest_score": null
+            }
+        ]
+    }
+    ```
 
 ---
 
-# Textbook
+# Textbook (교재)
 
 ### POST /textbooks
 
-- **Description**: Creates a new textbook.
-- **Authentication**: ✅ (Bearer)
-- **Request Body**:
-    ```json
-    {
-        "title": "New Textbook"
-    }
-    ```
-- **Response (201)**
-    ```json
-    {
-        "textbookId": "some-uuid",
-        "title": "New Textbook",
-        "version": {
-            "version_id": "some-uuid",
-            "version": 1,
-            "is_published": false,
-            "created_at": "2025-11-12T12:00:00.000Z"
-        }
-    }
-    ```
+- **설명**: 새로운 교재를 생성합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "title": "New Textbook"
+    }
+    ```
+- **응답 (201)**
+    ```json
+    {
+        "textbookId": "some-uuid",
+        "title": "New Textbook",
+        "version": {
+            "version_id": "some-uuid",
+            "version": 1,
+            "is_published": false,
+            "created_at": "2025-11-12T12:00:00.000Z"
+        }
+    }
+    ```
 
 ### GET /textbooks/mine
 
-- **Description**: Retrieves a list of textbooks created by the user.
-- **Authentication**: ✅ (Bearer)
-- **Response (200)**
-    ```json
-    [
-        {
-            "textbook_id": "some-uuid",
-            "title": "New Textbook",
-            "created_at": "2025-11-12T12:00:00.000Z",
-            "latest_version": 1
-        }
-    ]
-    ```
+- **설명**: 사용자가 생성한 교재 목록을 조회합니다.
+- **인증**: ✅ (Bearer)
+- **응답 (200)**
+    ```json
+    [
+        {
+            "textbook_id": "some-uuid",
+            "title": "New Textbook",
+            "created_at": "2025-11-12T12:00:00.000Z",
+            "latest_version": 1
+        }
+    ]
+    ```
 
 ### POST /textbooks/:textbookId/versions
 
-- **Description**: Creates a new version of a textbook.
-- **Authentication**: ✅ (Bearer)
-- **Request Body**:
-    ```json
-    {
-        "from_version": 1,
-        "publish": false
-    }
-    ```
-- **Response (201)**
-    ```json
-    {
-        "version_id": "some-uuid",
-        "version": 2,
-        "is_published": false,
-        "created_at": "2025-11-12T12:00:00.000Z"
-    }
-    ```
+- **설명**: 교재의 새로운 버전을 생성합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "from_version": 1,
+        "publish": false
+    }
+    ```
+- **응답 (201)**
+    ```json
+    {
+        "version_id": "some-uuid",
+        "version": 2,
+        "is_published": false,
+        "created_at": "2025-11-12T12:00:00.000Z"
+    }
+    ```
 
 ### GET /textbooks/:textbookId/versions/:version/pages
 
-- **Description**: Retrieves the pages of a specific textbook version.
-- **Authentication**: ✅ (Bearer)
-- **Response (200)**
-    ```json
-    [
-        {
-            "page_id": 1,
-            "page_number": 1,
-            "content": "..."
-        }
-    ]
-    ```
+- **설명**: 특정 교재 버전의 페이지 목록을 조회합니다.
+- **인증**: ✅ (Bearer)
+- **응답 (200)**
+    ```json
+    [
+        {
+            "page_id": 1,
+            "page_number": 1,
+            "content": "..."
+        }
+    ]
+    ```
 
 ### POST /textbooks/:textbookId/versions/:version/pages
 
-- **Description**: Creates a new page in a textbook version.
-- **Authentication**: ✅ (Bearer)
-- **Request Body**:
-    ```json
-    {
-        "page_number": 2,
-        "content": "..."
-    }
-    ```
-- **Response (201)**
-    ```json
-    {
-        "page_id": 2,
-        "page_number": 2,
-        "content": "..."
-    }
-    ```
+- **설명**: 교재 버전에 새로운 페이지를 생성합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "page_number": 2,
+        "content": "..."
+    }
+    ```
+- **응답 (201)**
+    ```json
+    {
+        "page_id": 2,
+        "page_number": 2,
+        "content": "..."
+    }
+    ```
