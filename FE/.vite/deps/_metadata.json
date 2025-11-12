@@ -1,0 +1,49 @@
+{
+  "hash": "ccaac80c",
+  "configHash": "9a82f6dc",
+  "lockfileHash": "2b3be536",
+  "browserHash": "8fb9f16d",
+  "optimized": {
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "73a13be9",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "7f001a9d",
+      "needsInterop": true
+    },
+    "react-router-dom": {
+      "src": "../../node_modules/react-router-dom/dist/index.mjs",
+      "file": "react-router-dom.js",
+      "fileHash": "bc10e1ab",
+      "needsInterop": false
+    },
+    "tailwind-merge": {
+      "src": "../../node_modules/tailwind-merge/dist/bundle-mjs.mjs",
+      "file": "tailwind-merge.js",
+      "fileHash": "93884933",
+      "needsInterop": false
+    },
+    "clsx": {
+      "src": "../../node_modules/clsx/dist/clsx.mjs",
+      "file": "clsx.js",
+      "fileHash": "d4dc73c7",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-7BTQE24S": {
+      "file": "chunk-7BTQE24S.js"
+    },
+    "chunk-UNLUE3XC": {
+      "file": "chunk-UNLUE3XC.js"
+    },
+    "chunk-5WRI5ZAA": {
+      "file": "chunk-5WRI5ZAA.js"
+    }
+  }
+}
