@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import DefaultLayout from "./layouts/DefaultLayout";
+import StudentDefaultLayout from "./layouts/StudentDefaultLayout";
 import StudentMain from "./pages/student/StudentMain";
 import QuizSolve from "./pages/student/QuizSolve";
 import EnterClass from "./pages/student/EnterClass";
@@ -14,7 +14,7 @@ const router = createBrowserRouter([
     element: <DefaultLayoutV2 />,
     children: [
       {
-        element: <DefaultLayout />,
+        element: <StudentDefaultLayout />,
         children: [
           {
             index: true,
@@ -38,7 +38,7 @@ const router = createBrowserRouter([
             element: <StudentDashboard />,
           },
           {
-            element: <DefaultLayout />,
+            element: <StudentDefaultLayout />,
             children: [
               {
                 path: "quiz",
