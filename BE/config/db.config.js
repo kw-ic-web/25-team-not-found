@@ -1,10 +1,17 @@
+import dotenv from 'dotenv';
+import fs from 'fs';
+
+// 설정 로드
+dotenv.config();
 import pg from 'pg';
-import './index.js'; // Ensure dotenv is configured
 
 const { Pool } = pg;
-
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_DATABASE,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
 });
 
 export default pool;
