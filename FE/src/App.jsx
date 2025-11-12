@@ -43,7 +43,7 @@ const router = createBrowserRouter([
         element: <DefaultLayout />,
         children: [
           {
-            index: true,
+            index: "login",
             element: <Login />,
           },
           { path: "lecture", element: <Lecture /> },
