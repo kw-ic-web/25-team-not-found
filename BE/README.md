@@ -6,7 +6,7 @@ This document outlines the API endpoints for the application.
 
 # Auth
 
-### POST /api/auth/register
+### POST /auth/register
 
 - **Description**: Registers a new user.
 - **Authentication**: ❌
@@ -28,7 +28,7 @@ This document outlines the API endpoints for the application.
     }
     ```
 
-### POST /api/auth/login
+### POST /auth/login
 
 - **Description**: Logs in a user and returns a JWT token.
 - **Authentication**: ❌
@@ -58,7 +58,7 @@ This document outlines the API endpoints for the application.
 
 # Annotations
 
-### GET /api/annotations
+### GET /annotations
 
 - **Description**: Retrieves annotations for a specific page or textbook.
 - **Authentication**: ✅ (Bearer)
@@ -84,7 +84,7 @@ This document outlines the API endpoints for the application.
     }
     ```
 
-### POST /api/annotations
+### POST /annotations
 
 - **Description**: Creates a new annotation.
 - **Authentication**: ✅ (Bearer)
@@ -113,7 +113,7 @@ This document outlines the API endpoints for the application.
     }
     ```
 
-### PUT /api/annotations/:annotation_id
+### PUT /annotations/:annotation_id
 
 - **Description**: Updates an existing annotation.
 - **Authentication**: ✅ (Bearer)
@@ -142,7 +142,7 @@ This document outlines the API endpoints for the application.
     }
     ```
 
-### DELETE /api/annotations/:annotation_id
+### DELETE /annotations/:annotation_id
 
 - **Description**: Deletes an annotation.
 - **Authentication**: ✅ (Bearer)
@@ -152,7 +152,7 @@ This document outlines the API endpoints for the application.
 
 # Dashboard
 
-### GET /api/dashboard
+### GET /dashboard
 
 - **Description**: Retrieves dashboard data for the logged-in user.
 - **Authentication**: ✅ (Bearer)
@@ -171,7 +171,7 @@ This document outlines the API endpoints for the application.
 
 # Enrollments
 
-### POST /api/enrollments
+### POST /enrollments
 
 - **Description**: Enrolls a user in a textbook.
 - **Authentication**: ✅ (Bearer)
@@ -195,7 +195,7 @@ This document outlines the API endpoints for the application.
 
 # Learn
 
-### POST /api/learn/reads
+### POST /learn/reads
 
 - **Description**: Records that a user has read a page.
 - **Authentication**: ✅ (Bearer)
@@ -216,7 +216,7 @@ This document outlines the API endpoints for the application.
 
 # Quizzes
 
-### GET /api/quizzes/:quiz_id/questions
+### GET /quizzes/:quiz_id/questions
 
 - **Description**: Retrieves the questions for a specific quiz.
 - **Authentication**: ✅ (Bearer)
@@ -236,7 +236,7 @@ This document outlines the API endpoints for the application.
     }
     ```
 
-### POST /api/quizzes/:quiz_id/submit
+### POST /quizzes/:quiz_id/submit
 
 - **Description**: Submits answers for a quiz.
 - **Authentication**: ✅ (Bearer)
@@ -273,7 +273,7 @@ This document outlines the API endpoints for the application.
 
 # Quiz Management
 
-### POST /api/quiz-managements
+### POST /quiz-managements
 
 - **Description**: Creates a new quiz.
 - **Authentication**: ✅ (Bearer)
@@ -304,7 +304,7 @@ This document outlines the API endpoints for the application.
     }
     ```
 
-### GET /api/quiz-managements/:page_id
+### GET /quiz-managements/:page_id
 
 - **Description**: Retrieves quizzes for a specific page.
 - **Authentication**: ✅ (Bearer)
@@ -330,7 +330,7 @@ This document outlines the API endpoints for the application.
 
 # Session
 
-### POST /api/session/join
+### POST /session/join
 
 - **Description**: Joins a session using an invitation code.
 - **Authentication**: ✅ (Bearer)
@@ -356,7 +356,7 @@ This document outlines the API endpoints for the application.
 
 # Teacher
 
-### GET /api/teacher/:textbookId/students
+### GET /teacher/:textbookId/students
 
 - **Description**: Retrieves a list of students for a specific textbook.
 - **Authentication**: ✅ (Bearer)
@@ -391,7 +391,7 @@ This document outlines the API endpoints for the application.
 
 # Textbook
 
-### POST /api/textbooks
+### POST /textbooks
 
 - **Description**: Creates a new textbook.
 - **Authentication**: ✅ (Bearer)
@@ -415,7 +415,7 @@ This document outlines the API endpoints for the application.
     }
     ```
 
-### GET /api/textbooks/mine
+### GET /textbooks/mine
 
 - **Description**: Retrieves a list of textbooks created by the user.
 - **Authentication**: ✅ (Bearer)
@@ -431,7 +431,7 @@ This document outlines the API endpoints for the application.
     ]
     ```
 
-### POST /api/textbooks/:textbookId/versions
+### POST /textbooks/:textbookId/versions
 
 - **Description**: Creates a new version of a textbook.
 - **Authentication**: ✅ (Bearer)
@@ -452,7 +452,7 @@ This document outlines the API endpoints for the application.
     }
     ```
 
-### GET /api/textbooks/:textbookId/versions/:version/pages
+### GET /textbooks/:textbookId/versions/:version/pages
 
 - **Description**: Retrieves the pages of a specific textbook version.
 - **Authentication**: ✅ (Bearer)
@@ -467,7 +467,7 @@ This document outlines the API endpoints for the application.
     ]
     ```
 
-### POST /api/textbooks/:textbookId/versions/:version/pages
+### POST /textbooks/:textbookId/versions/:version/pages
 
 - **Description**: Creates a new page in a textbook version.
 - **Authentication**: ✅ (Bearer)
