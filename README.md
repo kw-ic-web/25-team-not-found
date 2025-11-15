@@ -1,95 +1,109 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/T3W3QeQp)
+# 📁 File API
+**- 인증:** ❌  
 
-1. POST /api/file
-설명: 파일을 업로드하고 DB에 저장합니다.
-인증: ⛔ (필요 없음)
-요청 형식: multipart/form-data
-요청 필드 (Form Data)
+## 1. POST /api/file (파일 업로드)
+
+- 요청
+```json
 {
   "file": "<업로드할 실제 파일>",
   "category": "user_profile | textbook_cover | page_content | main_banner | other",
-  "id": "3" 
+  "id": "3"
 }
+```
 
-필드 설명
-필드	타입	필수	설명
-file	file(binary)	✅	업로드할 이미지·파일
-category	string	✅	파일 용도
-id	string/number	⛔	대상 ID (user_id, textbook_id 등) — main_banner는 생략
-응답 (201 Created)
+- 응답(201)
+```json
 {
   "fileId": 1,
-  "url": "http://localhost:3000/files/74b650d4bdb243c2ab955b3a54c443f3.jpg"
+  "url": "http://localhost:3000/files/sample.jpg"
 }
+```
 
-2. GET /api/file/by-target
-설명: category + id 조합으로 최신 파일을 조회합니다.
-인증: ⛔
-요청 (Query Parameters)
+## 2. GET /api/file/by-target (category + id 조합으로 최신 파일 1개 조회)
+
+- 요청
+```json
 {
   "category": "user_profile",
   "id": "3"
 }
-
-id 생략 예시 (main_banner)
+```
+- id 생략 예시 (main_banner)
+```json
 {
   "category": "main_banner"
 }
+```
 
-응답 (200 OK)
+- 응답 (200 OK)
+```json
 {
   "fileId": 1,
-  "url": "http://localhost:3000/files/74b650d4bdb243c2ab955b3a54c443f3.jpg"
+  "url": "http://localhost:3000/files/sample.jpg"
 }
+```
 
-응답 (404 Not Found)
+- 응답 (404 Not Found)
+```json
 {
   "message": "해당 category/id에 해당하는 파일이 없습니다."
 }
+```
+## 3. GET /api/file/{fileId} (file_id(PK)로 단일 파일 정보 조회)
 
-3. GET /api/file/{fileId}
-설명: file_id(PK)로 파일 정보를 조회합니다.
-인증: ⛔
-요청 (Path Parameter)
+- 요청
+```json
 {
   "fileId": 1
 }
+```
 
-응답 (200 OK)
+- 응답 (200 OK)
+```json
 {
   "fileId": 1,
-  "url": "http://localhost:3000/files/74b650d4bdb243c2ab955b3a54c443f3.jpg"
+  "url": "http://localhost:3000/files/sample.jpg"
 }
+```
 
-응답 (404 Not Found)
+- 응답 (404 Not Found)
+```json
 {
   "message": "파일을 찾을 수 없습니다."
 }
+```
 
-4. DELETE /api/file/{fileId}
-설명: 해당 file_id의 파일을 삭제합니다. (DB row + 실제 파일 삭제)
-인증: ⛔ (필요 시 체크 로직 추가 가능)
-요청 (Path Parameter)
+## 4. DELETE /api/file/{fileId} (파일 삭제)
+
+- 요청
+```json
 {
   "fileId": 1
 }
+```
 
-응답 (200 OK)
+- 응답 (200 OK)
+```json
 {
   "message": "삭제되었습니다.",
   "fileId": 1
 }
+```
 
-응답 (404 Not Found)
+- 응답 (404 Not Found)
+```json
 {
   "message": "파일을 찾을 수 없습니다."
 }
+```
 
-📌 category 값 설명(JSON)
+## category 값 설명(JSON)
+```json
 {
   "user_profile": {
-    "description": "유저 프로필 이미지",
-    "id": "해당 유저의 user_id (예: 3)"
+    "description": "사용자 프로필 이미지",
+    "id": "user_id (예: 3)"
   },
   "textbook_cover": {
     "description": "교재 표지 이미지",
