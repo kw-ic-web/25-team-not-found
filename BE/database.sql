@@ -412,3 +412,28 @@ ALTER TABLE page_reads
   FOREIGN KEY (page_id) 
   REFERENCES textbook_pages(page_id) 
   ON DELETE CASCADE;
+
+-- ============================================
+-- 파일
+-- ============================================
+CREATE TYPE file_category AS ENUM (
+  'user_profile',     -- 유저 프로필 이미지
+  'textbook_cover',   -- 교재 표지
+  'page_content',     -- 교재 페이지 안 이미지/첨부
+  'main_banner',      -- 메인 화면 배너
+  'other'             -- 기타
+);
+
+CREATE TABLE files (
+  file_id       SERIAL PRIMARY KEY,
+  category      file_category NOT NULL,
+  id        	  TEXT,
+  file_path     TEXT NOT NULL, 
+  original_name TEXT NOT NULL,
+  mime_type     TEXT NOT NULL,
+  size_bytes    INTEGER NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_files_category_ref
+  ON files(category, id);

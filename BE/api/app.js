@@ -9,6 +9,8 @@ const textbooksRouter = require("./routes/textbooks");
 const quizzesRouter = require("./routes/quizzes");
 const teacherStudentsRouter = require("./routes/teacherStudents");
 const learnRouter = require("./routes/learn");
+const fileRouter = require("./routes/file");
+const path = require("path");
 
 dotenv.config();
 
@@ -47,6 +49,9 @@ app.use("/api/enrollments", authMiddleware, enrollmentsRouter);
 app.use("/api/quizzes", authMiddleware, quizzesRouter);
 app.use("/api/teacher", authMiddleware, teacherStudentsRouter);
 app.use("/api/learn", authMiddleware, learnRouter);
+app.use("/files", express.static(path.join(process.cwd(), "uploads")));
+app.use("/api/file", fileRouter);
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
