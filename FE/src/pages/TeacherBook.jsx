@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 // import { api } from "../lib/api";
-import SectionList from "../../components/editor/SectionList";
+import SectionList from "../components/editor/SectionList";
 
 // 최소 마크다운 렌더러
 function simpleMarkdown(md) {

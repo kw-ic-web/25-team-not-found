@@ -11,7 +11,7 @@ import TeacherQuiz from "./pages/TeacherQuiz";
 import TeacherLecture from "./pages/TeacherLecture";
 import TeacherStudent from "./pages/TeacherStudent";
 import TeacherMain from "./pages/TeacherMain";
-import TeacherBook from "./pages/teacher/TeacherBook";
+import TeacherBook from "./pages/TeacherBook";
 import Login from "./pages/Login";
 import Lecture from "./pages/Lecture";
 import StudentMain from "./pages/student/StudentMain";
