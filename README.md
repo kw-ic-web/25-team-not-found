@@ -3,7 +3,7 @@
 📁 File API 명세서
 1. POST /api/file
 설명: 파일을 업로드하고 DB에 저장합니다.
-인증: ⛔ (필요 없음)
+인증: 필요 없음
 요청 형식: multipart/form-data
 요청 필드 (Form Data)
 {
