@@ -486,3 +486,5 @@
         "content": "..."
     }
     ```
+# WebRTC 시그널링 서버 API 명세서
+**https://www.notion.so/WebRTC-API-2b433b8ab6f6804796fffd782ccc1221**

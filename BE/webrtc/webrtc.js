@@ -1,3 +1,11 @@
+// 1) 화상 통화 방 (textbook 기준)
+//    roomId = `video:textbook:${textbookId}`
+//    예) "video:textbook:3"
+//
+// 2) 교재 편집 방 (textbook + page 기준)
+//    roomId = `edit:textbook:${textbookId}:page:${pageId}`
+//    예) "edit:textbook:3:page:12"
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -21,7 +29,9 @@ io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
   socket.on("join_room", ({ roomId, userName }) => {
+    console.log(`join_room: ${userName} -> ${roomId}`);
     socket.join(roomId);
+
     socket.to(roomId).emit("peer_joined", {
       socketId: socket.id,
       userName,
@@ -29,6 +39,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("webrtc_offer", ({ roomId, sdp }) => {
+    console.log(`webrtc_offer from ${socket.id} to room ${roomId}`);
     socket.to(roomId).emit("webrtc_offer", {
       sdp,
       senderId: socket.id,
@@ -36,6 +47,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("webrtc_answer", ({ roomId, sdp }) => {
+    console.log(`webrtc_answer from ${socket.id} to room ${roomId}`);
     socket.to(roomId).emit("webrtc_answer", {
       sdp,
       senderId: socket.id,
@@ -49,6 +61,7 @@ io.on("connection", (socket) => {
     });
   });
 
+
   socket.on("editing_state", ({ roomId, isEditing, userName }) => {
     console.log(`editing_state: ${userName} in ${roomId} => ${isEditing}`);
 
@@ -60,7 +73,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("leave_room", ({ roomId }) => {
+    console.log(`leave_room: ${socket.id} from ${roomId}`);
     socket.leave(roomId);
+
     socket.to(roomId).emit("peer_left", {
       socketId: socket.id,
     });
