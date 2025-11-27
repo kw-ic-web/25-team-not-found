@@ -32,7 +32,7 @@ export const updateSubmissionScore = async (client, submissionId, score) => {
 };
 
 export const getQuizResults = async (submissionId) => {
-    const query = `
+  const query = `
         SELECT
             qq.question_id,
             qq.question_text,
@@ -46,6 +46,33 @@ export const getQuizResults = async (submissionId) => {
         WHERE qa.submission_id = $1
         ORDER BY qq.question_order;
     `;
-    const { rows } = await pool.query(query, [submissionId]);
-    return rows;
+  const { rows } = await pool.query(query, [submissionId]);
+  return rows;
+};
+
+export const getQuizStatsByUser = async (userId) => {
+  const query = `
+    SELECT
+      COUNT(submission_id) as total_quizzes,
+      COALESCE(AVG(score), 0) as average_score
+    FROM quiz_submissions
+    WHERE user_id = $1
+  `;
+  const { rows } = await pool.query(query, [userId]);
+  return rows[0];
+};
+
+export const getQuizStatsByTextbook = async (userId, textbookId) => {
+  const query = `
+    SELECT
+      COUNT(qs.submission_id) as total_quizzes,
+      COALESCE(AVG(qs.score), 0) as average_score
+    FROM quiz_submissions qs
+    JOIN quizzes q ON qs.quiz_id = q.quiz_id
+    JOIN textbook_pages tp ON q.page_id = tp.page_id
+    JOIN textbook_versions tv ON tp.version_id = tv.version_id
+    WHERE qs.user_id = $1 AND tv.textbook_id = $2
+  `;
+  const { rows } = await pool.query(query, [userId, textbookId]);
+  return rows[0];
 };

@@ -151,6 +151,176 @@
 ---
 
 # Dashboard (대시보드)
+# API 명세서
+
+이 문서는 애플리케이션의 API 엔드포인트를 설명합니다.
+
+---
+
+# Auth (인증)
+
+### POST /auth/register
+
+- **설명**: 새로운 사용자를 등록(회원가입)합니다.
+- **인증**: ❌
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "username": "testuser",
+        "password": "password123",
+        "nickname": "Test User"
+    }
+    ```
+- **응답 (201)**
+    ```json
+    {
+        "user_id": 1,
+        "username": "testuser",
+        "nickname": "Test User",
+        "created_at": "2025-11-12T12:00:00.000Z"
+    }
+    ```
+
+### POST /auth/login
+
+- **설명**: 사용자 로그인을 수행하고 JWT 토큰을 반환합니다.
+- **인증**: ❌
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "username": "testuser",
+        "password": "password123"
+    }
+    ```
+- **응답 (200)**
+    ```json
+    {
+        "code": 200,
+        "message": "토큰이 발급되었습니다.",
+        "access_token": "your_jwt_token",
+        "token_type": "Bearer",
+        "user": {
+            "user_id": 1,
+            "username": "testuser",
+            "nickname": "Test User"
+        }
+    }
+    ```
+
+### POST /auth/check-username
+
+- **설명**: 사용자 이름(ID)의 중복 여부를 확인합니다.
+- **인증**: ❌
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "username": "testuser"
+    }
+    ```
+- **응답 (200)**
+    ```json
+    {
+        "available": true
+    }
+    ```
+
+---
+
+# Annotations (주석)
+
+### GET /annotations
+
+- **설명**: 특정 페이지 또는 교재(Textbook)에 대한 주석을 조회합니다.
+- **인증**: ✅ (Bearer)
+- **쿼리 파라미터 (Query Parameters)**:
+    - `page_id` (integer): 주석을 조회할 페이지의 ID.
+    - `textbook_id` (integer): 주석을 조회할 교재의 ID.
+    *(참고: `page_id` 또는 `textbook_id` 중 하나는 반드시 제공되어야 합니다)*
+- **응답 (200)**
+    ```json
+    {
+        "success": true,
+        "data": [
+            {
+                "annotation_id": 1,
+                "user_id": 1,
+                "page_id": 1,
+                "annotation_type": "highlight",
+                "content": "This is a highlighted text.",
+                "location_data": {},
+                "created_at": "2025-11-07T12:00:00.000Z"
+            }
+        ]
+    }
+    ```
+
+### POST /annotations
+
+- **설명**: 새로운 주석을 생성합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "page_id": 1,
+        "annotation_type": "memo",
+        "content": "This is a memo.",
+        "location_data": {}
+    }
+    ```
+- **응답 (201)**
+    ```json
+    {
+        "success": true,
+        "data": {
+            "annotation_id": 2,
+            "user_id": 1,
+            "page_id": 1,
+            "annotation_type": "memo",
+            "content": "This is a memo.",
+            "location_data": {},
+            "created_at": "2025-11-07T12:05:00.000Z"
+        }
+    }
+    ```
+
+### PUT /annotations/:annotation_id
+
+- **설명**: 기존 주석을 수정합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "page_id": 1,
+        "annotation_type": "memo",
+        "content": "This is an updated memo.",
+        "location_data": {}
+    }
+    ```
+- **응답 (200)**
+    ```json
+    {
+        "success": true,
+        "data": {
+            "annotation_id": 2,
+            "user_id": 1,
+            "page_id": 1,
+            "annotation_type": "memo",
+            "content": "This is an updated memo.",
+            "location_data": {},
+            "created_at": "2025-11-07T12:05:00.000Z"
+        }
+    }
+    ```
+
+### DELETE /annotations/:annotation_id
+
+- **설명**: 주석을 삭제합니다.
+- **인증**: ✅ (Bearer)
+- **응답 (204)**: 내용 없음 (No content).
+
+---
+
+# Dashboard (대시보드)
 
 ### GET /dashboard
 
@@ -161,8 +331,24 @@
     {
         "success": true,
         "data": {
-            "recent_textbooks": [],
-            "ongoing_sessions": []
+            "enrollments": [
+                {
+                    "textbook_id": "some-uuid",
+                    "title": "Math 101",
+                    "author_id": 1,
+                    "role": "student",
+                    "last_accessed": "2025-11-12T12:00:00.000Z",
+                    "progress_rate": 45.5,
+                    "quiz_average_score": 85.0
+                }
+            ],
+            "feedback": [],
+            "stats": {
+                "average_score": 85.0,
+                "quizzes_taken": 5,
+                "total_pages_read": 50
+            },
+            "teacher_textbooks": []
         }
     }
     ```
@@ -412,6 +598,25 @@
             "is_published": false,
             "created_at": "2025-11-12T12:00:00.000Z"
         }
+    }
+    ```
+
+### PUT /textbooks/:textbookId
+
+- **설명**: 교재의 제목을 수정합니다.
+- **인증**: ✅ (Bearer, Teacher only)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "title": "Updated Textbook Title"
+    }
+    ```
+- **응답 (200)**
+    ```json
+    {
+        "textbook_id": "some-uuid",
+        "title": "Updated Textbook Title",
+        "updated_at": "2025-11-12T13:00:00.000Z"
     }
     ```
 
