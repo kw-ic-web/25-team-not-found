@@ -373,3 +373,18 @@ CREATE TRIGGER trigger_user_annotations_updated_at
   BEFORE UPDATE ON user_annotations
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- 학습 기록 테이블 (Learn)
+-- ============================================
+
+CREATE TABLE page_reads (
+  read_id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  page_id UUID NOT NULL,
+  read_count INTEGER DEFAULT 1,
+  last_read_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT fk_page_reads_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  CONSTRAINT fk_page_reads_page FOREIGN KEY (page_id) REFERENCES textbook_pages(page_id) ON DELETE CASCADE,
+  UNIQUE (user_id, page_id)
+);

@@ -120,7 +120,7 @@ router.post("/:textbookId/versions", authMiddleware, roleGuard(["teacher"]), asy
   }
 });
 
-router.get("/:textbookId/versions/:version/pages", authMiddleware, roleGuard(["student","teacher"]), async (req, res) => {
+router.get("/:textbookId/versions/:version/pages", authMiddleware, roleGuard(["student", "teacher"]), async (req, res) => {
   try {
     const { textbookId, version } = req.params;
     const r = await pool.query(
@@ -162,6 +162,66 @@ router.post("/:textbookId/versions/:version/pages", authMiddleware, roleGuard(["
   } catch (e) {
     console.error("CREATE PAGE ERROR:", e);
     return res.status(500).json({ message: "create page failed" });
+  }
+});
+
+router.put("/:textbookId", authMiddleware, roleGuard(["teacher"]), async (req, res) => {
+  try {
+    const { textbookId } = req.params;
+    const { title } = req.body || {};
+    if (!title || !String(title).trim()) {
+      return res.status(400).json({ message: "title is required" });
+    }
+
+    const r = await pool.query(
+      `UPDATE public.textbooks
+       SET title = $1, updated_at = now()
+       WHERE textbook_id = $2 AND author_id = $3
+       RETURNING textbook_id, title, updated_at`,
+      [title.trim(), textbookId, req.user.user_id]
+    );
+
+    if (r.rowCount === 0) {
+      return res.status(404).json({ message: "textbook not found or unauthorized" });
+    }
+
+    return res.json(r.rows[0]);
+  } catch (e) {
+    console.error("UPDATE TEXTBOOK ERROR:", e);
+    return res.status(500).json({ message: "update textbook failed" });
+  }
+});
+
+router.put("/:textbookId/versions/:version/pages/:pageId", authMiddleware, roleGuard(["teacher"]), async (req, res) => {
+  try {
+    const { textbookId, version, pageId } = req.params;
+    const { content } = req.body || {};
+
+    // Verify ownership via textbook
+    const rAuth = await pool.query(
+      `SELECT t.textbook_id
+       FROM public.textbooks t
+       WHERE t.textbook_id = $1 AND t.author_id = $2`,
+      [textbookId, req.user.user_id]
+    );
+    if (rAuth.rowCount === 0) return res.status(403).json({ message: "unauthorized" });
+
+    const r = await pool.query(
+      `UPDATE public.textbook_pages
+       SET content = $1
+       WHERE page_id = $2
+       RETURNING page_id, page_number, content`,
+      [content, pageId]
+    );
+
+    if (r.rowCount === 0) {
+      return res.status(404).json({ message: "page not found" });
+    }
+
+    return res.json(r.rows[0]);
+  } catch (e) {
+    console.error("UPDATE PAGE ERROR:", e);
+    return res.status(500).json({ message: "update page failed" });
   }
 });
 
