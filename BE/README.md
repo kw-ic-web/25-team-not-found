@@ -698,8 +698,8 @@
 - **인증**: ✅ (Bearer)
 - **요청 경로 파라미터**: pageId: 삭제할 페이지의 UUID
 - **요청 본문 (Request Body)**: 없음
-  - **응답 (200)**
-    ```json
+- **응답 (200)**
+  ```json
     {
         "deletedPageId": "페이지 UUID",
         "message": "page (and related quizzes) deleted"
