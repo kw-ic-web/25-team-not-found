@@ -693,5 +693,20 @@
     ```
 ---
 
+### DELETE /textbooks/pages/:pageId
+
+- **설명**: 교재 페이지 삭제(해당 페이지에 연결된 퀴즈도 함께 삭제됩니다)
+- **인증**: ✅ (Bearer)
+- **요청 경로 파라미터**: pageId: 삭제할 페이지의 UUID
+- **요청 본문 (Request Body)**: 없음
+  - **응답 (200)**
+    ```json
+    {
+        "deletedPageId": "페이지 UUID",
+        "message": "page (and related quizzes) deleted"
+    }
+    ```
+---
+
 # WebRTC 시그널링 서버 API 명세서
 **https://www.notion.so/WebRTC-API-2b433b8ab6f6804796fffd782ccc1221**
