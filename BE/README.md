@@ -691,7 +691,6 @@
         "content": "..."
     }
     ```
----
 
 ### DELETE /textbooks/pages/:pageId
 
