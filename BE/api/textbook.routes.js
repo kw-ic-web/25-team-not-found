@@ -225,4 +225,59 @@ router.put("/:textbookId/versions/:version/pages/:pageId", authMiddleware, roleG
   }
 });
 
+router.delete(
+  "/pages/:pageId",
+  authMiddleware,
+  roleGuard(["teacher"]),
+  async (req, res) => {
+    const client = await pool.connect();
+    try {
+      const { pageId } = req.params;
+
+      await client.query("BEGIN");
+
+      const rCheck = await client.query(
+        `
+        SELECT t.textbook_id
+        FROM public.textbook_pages p
+        JOIN public.textbook_versions v ON p.version_id = v.version_id
+        JOIN public.textbooks t ON v.textbook_id = t.textbook_id
+        WHERE p.page_id = $1
+          AND t.author_id = $2
+        `,
+        [pageId, req.user.user_id]
+      );
+
+      if (rCheck.rowCount === 0) {
+        await client.query("ROLLBACK");
+        return res
+          .status(404)
+          .json({ message: "page not found or unauthorized" });
+      }
+
+      const rDel = await client.query(
+        `
+        DELETE FROM public.textbook_pages
+        WHERE page_id = $1
+        RETURNING page_id
+        `,
+        [pageId]
+      );
+
+      await client.query("COMMIT");
+
+      return res.json({
+        deletedPageId: rDel.rows[0].page_id,
+        message: "page (and related quizzes) deleted",
+      });
+    } catch (e) {
+      await client.query("ROLLBACK");
+      console.error("DELETE PAGE ERROR:", e);
+      return res.status(500).json({ message: "delete page failed" });
+    } finally {
+      client.release();
+    }
+  }
+);
+
 export default router;
