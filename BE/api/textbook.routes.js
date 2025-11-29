@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import pool from '../config/db.config.js';
-import roleGuard from '../middleware/roleGuard.js';
+import checkEnrollment from '../middleware/checkEnrollment.js';
 import authMiddleware from '../middleware/auth.middleware.js';
 
 const router = Router();
@@ -69,7 +69,7 @@ router.get("/mine", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/:textbookId/versions", authMiddleware, roleGuard(["teacher"]), async (req, res) => {
+router.post("/:textbookId/versions", authMiddleware, checkEnrollment, async (req, res) => {
   const client = await pool.connect();
   try {
     const { textbookId } = req.params;
@@ -120,7 +120,7 @@ router.post("/:textbookId/versions", authMiddleware, roleGuard(["teacher"]), asy
   }
 });
 
-router.get("/:textbookId/versions/:version/pages", authMiddleware, roleGuard(["student", "teacher"]), async (req, res) => {
+router.get("/:textbookId/versions/:version/pages", authMiddleware, checkEnrollment, async (req, res) => {
   try {
     const { textbookId, version } = req.params;
     const r = await pool.query(
@@ -138,7 +138,7 @@ router.get("/:textbookId/versions/:version/pages", authMiddleware, roleGuard(["s
   }
 });
 
-router.post("/:textbookId/versions/:version/pages", authMiddleware, roleGuard(["teacher"]), async (req, res) => {
+router.post("/:textbookId/versions/:version/pages", authMiddleware, checkEnrollment, async (req, res) => {
   try {
     const { textbookId, version } = req.params;
     const { page_number, content } = req.body || {};
@@ -165,7 +165,7 @@ router.post("/:textbookId/versions/:version/pages", authMiddleware, roleGuard(["
   }
 });
 
-router.put("/:textbookId", authMiddleware, roleGuard(["teacher"]), async (req, res) => {
+router.put("/:textbookId", authMiddleware, checkEnrollment, async (req, res) => {
   try {
     const { textbookId } = req.params;
     const { title } = req.body || {};
@@ -176,9 +176,9 @@ router.put("/:textbookId", authMiddleware, roleGuard(["teacher"]), async (req, r
     const r = await pool.query(
       `UPDATE public.textbooks
        SET title = $1, updated_at = now()
-       WHERE textbook_id = $2 AND author_id = $3
+       WHERE textbook_id = $2
        RETURNING textbook_id, title, updated_at`,
-      [title.trim(), textbookId, req.user.user_id]
+      [title.trim(), textbookId]
     );
 
     if (r.rowCount === 0) {
@@ -192,19 +192,19 @@ router.put("/:textbookId", authMiddleware, roleGuard(["teacher"]), async (req, r
   }
 });
 
-router.put("/:textbookId/versions/:version/pages/:pageId", authMiddleware, roleGuard(["teacher"]), async (req, res) => {
+router.put("/:textbookId/versions/:version/pages/:pageId", authMiddleware, checkEnrollment, async (req, res) => {
   try {
     const { textbookId, version, pageId } = req.params;
     const { content } = req.body || {};
 
-    // Verify ownership via textbook
+    // Verify existence via textbook (permission checked by middleware)
     const rAuth = await pool.query(
       `SELECT t.textbook_id
        FROM public.textbooks t
-       WHERE t.textbook_id = $1 AND t.author_id = $2`,
-      [textbookId, req.user.user_id]
+       WHERE t.textbook_id = $1`,
+      [textbookId]
     );
-    if (rAuth.rowCount === 0) return res.status(403).json({ message: "unauthorized" });
+    if (rAuth.rowCount === 0) return res.status(404).json({ message: "textbook not found" });
 
     const r = await pool.query(
       `UPDATE public.textbook_pages
@@ -228,7 +228,7 @@ router.put("/:textbookId/versions/:version/pages/:pageId", authMiddleware, roleG
 router.delete(
   "/pages/:pageId",
   authMiddleware,
-  roleGuard(["teacher"]),
+  checkEnrollment,
   async (req, res) => {
     const client = await pool.connect();
     try {
@@ -243,16 +243,15 @@ router.delete(
         JOIN public.textbook_versions v ON p.version_id = v.version_id
         JOIN public.textbooks t ON v.textbook_id = t.textbook_id
         WHERE p.page_id = $1
-          AND t.author_id = $2
         `,
-        [pageId, req.user.user_id]
+        [pageId]
       );
 
       if (rCheck.rowCount === 0) {
         await client.query("ROLLBACK");
         return res
           .status(404)
-          .json({ message: "page not found or unauthorized" });
+          .json({ message: "page not found" });
       }
 
       const rDel = await client.query(
