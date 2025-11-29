@@ -595,7 +595,7 @@
         "version": {
             "version_id": "some-uuid",
             "version": 1,
-            "is_published": false,
+            "version": 1,
             "created_at": "2025-11-12T12:00:00.000Z"
         }
     }
@@ -604,7 +604,7 @@
 ### PUT /textbooks/:textbookId
 
 - **설명**: 교재의 제목을 수정합니다.
-- **인증**: ✅ (Bearer, Teacher only)
+- **인증**: ✅ (Bearer, Enrolled users)
 - **요청 본문 (Request Body)**:
     ```json
     {
@@ -643,8 +643,7 @@
 - **요청 본문 (Request Body)**:
     ```json
     {
-        "from_version": 1,
-        "publish": false
+        "from_version": 1
     }
     ```
 - **응답 (201)**
@@ -652,7 +651,7 @@
     {
         "version_id": "some-uuid",
         "version": 2,
-        "is_published": false,
+        "version": 2,
         "created_at": "2025-11-12T12:00:00.000Z"
     }
     ```
@@ -689,6 +688,25 @@
         "page_id": 2,
         "page_number": 2,
         "content": "..."
+    }
+    ```
+
+### PUT /textbooks/:textbookId/versions/:version/pages/:pageId
+
+- **설명**: 교재 페이지의 내용을 수정합니다.
+- **인증**: ✅ (Bearer, Enrolled users)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "content": "Updated page content..."
+    }
+    ```
+- **응답 (200)**:
+    ```json
+    {
+        "page_id": 2,
+        "page_number": 2,
+        "content": "Updated page content..."
     }
     ```
 
