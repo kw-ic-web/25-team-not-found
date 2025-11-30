@@ -20,6 +20,7 @@ import EnterClass from "./pages/student/EnterClass";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import Landing from "./pages/Landing";
 import RoleSelect from "./pages/RoleSelect";
+import Signup from "./pages/Signup";
 
 const router = createBrowserRouter([
   {
@@ -46,7 +47,10 @@ const router = createBrowserRouter([
             path: "login",
             element: <Login />,
           },
+
           { path: "lecture", element: <Lecture /> },
+          { path: "signup", element: <Signup /> },
+          
         ],
       },
       {
