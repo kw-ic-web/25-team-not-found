@@ -25,6 +25,14 @@ export const register = async (userData) => {
   };
 };
 
+export const checkUsernameAvailability = async (username) => {
+  if (!username) {
+    throw new Error("username은 필수입니다.");
+  }
+  const user = await findUserByUsername(username);
+  return { available: !user };
+};
+
 export const login = async (userData) => {
   const { username, password } = userData;
 

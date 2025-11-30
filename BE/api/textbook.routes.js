@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import pool from '../config/db.config.js';
-import roleGuard from '../middleware/roleGuard.js';
+import checkEnrollment from '../middleware/checkEnrollment.js';
 import authMiddleware from '../middleware/auth.middleware.js';
 
 const router = Router();
@@ -69,7 +69,7 @@ router.get("/mine", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/:textbookId/versions", authMiddleware, roleGuard(["teacher"]), async (req, res) => {
+router.post("/:textbookId/versions", authMiddleware, checkEnrollment, async (req, res) => {
   const client = await pool.connect();
   try {
     const { textbookId } = req.params;
@@ -120,7 +120,7 @@ router.post("/:textbookId/versions", authMiddleware, roleGuard(["teacher"]), asy
   }
 });
 
-router.get("/:textbookId/versions/:version/pages", authMiddleware, roleGuard(["student","teacher"]), async (req, res) => {
+router.get("/:textbookId/versions/:version/pages", authMiddleware, checkEnrollment, async (req, res) => {
   try {
     const { textbookId, version } = req.params;
     const r = await pool.query(
@@ -138,7 +138,7 @@ router.get("/:textbookId/versions/:version/pages", authMiddleware, roleGuard(["s
   }
 });
 
-router.post("/:textbookId/versions/:version/pages", authMiddleware, roleGuard(["teacher"]), async (req, res) => {
+router.post("/:textbookId/versions/:version/pages", authMiddleware, checkEnrollment, async (req, res) => {
   try {
     const { textbookId, version } = req.params;
     const { page_number, content } = req.body || {};
@@ -164,5 +164,119 @@ router.post("/:textbookId/versions/:version/pages", authMiddleware, roleGuard(["
     return res.status(500).json({ message: "create page failed" });
   }
 });
+
+router.put("/:textbookId", authMiddleware, checkEnrollment, async (req, res) => {
+  try {
+    const { textbookId } = req.params;
+    const { title } = req.body || {};
+    if (!title || !String(title).trim()) {
+      return res.status(400).json({ message: "title is required" });
+    }
+
+    const r = await pool.query(
+      `UPDATE public.textbooks
+       SET title = $1, updated_at = now()
+       WHERE textbook_id = $2
+       RETURNING textbook_id, title, updated_at`,
+      [title.trim(), textbookId]
+    );
+
+    if (r.rowCount === 0) {
+      return res.status(404).json({ message: "textbook not found or unauthorized" });
+    }
+
+    return res.json(r.rows[0]);
+  } catch (e) {
+    console.error("UPDATE TEXTBOOK ERROR:", e);
+    return res.status(500).json({ message: "update textbook failed" });
+  }
+});
+
+router.put("/:textbookId/versions/:version/pages/:pageId", authMiddleware, checkEnrollment, async (req, res) => {
+  try {
+    const { textbookId, version, pageId } = req.params;
+    const { content } = req.body || {};
+
+    // Verify existence via textbook (permission checked by middleware)
+    const rAuth = await pool.query(
+      `SELECT t.textbook_id
+       FROM public.textbooks t
+       WHERE t.textbook_id = $1`,
+      [textbookId]
+    );
+    if (rAuth.rowCount === 0) return res.status(404).json({ message: "textbook not found" });
+
+    const r = await pool.query(
+      `UPDATE public.textbook_pages
+       SET content = $1
+       WHERE page_id = $2
+       RETURNING page_id, page_number, content`,
+      [content, pageId]
+    );
+
+    if (r.rowCount === 0) {
+      return res.status(404).json({ message: "page not found" });
+    }
+
+    return res.json(r.rows[0]);
+  } catch (e) {
+    console.error("UPDATE PAGE ERROR:", e);
+    return res.status(500).json({ message: "update page failed" });
+  }
+});
+
+router.delete(
+  "/pages/:pageId",
+  authMiddleware,
+  checkEnrollment,
+  async (req, res) => {
+    const client = await pool.connect();
+    try {
+      const { pageId } = req.params;
+
+      await client.query("BEGIN");
+
+      const rCheck = await client.query(
+        `
+        SELECT t.textbook_id
+        FROM public.textbook_pages p
+        JOIN public.textbook_versions v ON p.version_id = v.version_id
+        JOIN public.textbooks t ON v.textbook_id = t.textbook_id
+        WHERE p.page_id = $1
+        `,
+        [pageId]
+      );
+
+      if (rCheck.rowCount === 0) {
+        await client.query("ROLLBACK");
+        return res
+          .status(404)
+          .json({ message: "page not found" });
+      }
+
+      const rDel = await client.query(
+        `
+        DELETE FROM public.textbook_pages
+        WHERE page_id = $1
+        RETURNING page_id
+        `,
+        [pageId]
+      );
+
+      await client.query("COMMIT");
+
+      return res.json({
+        deletedPageId: rDel.rows[0].page_id,
+        message: "page (and related quizzes) deleted",
+      });
+    } catch (e) {
+      await client.query("ROLLBACK");
+      console.error("DELETE PAGE ERROR:", e);
+      return res.status(500).json({ message: "delete page failed" });
+    } finally {
+      client.release();
+    }
+  }
+);
 
 export default router;
