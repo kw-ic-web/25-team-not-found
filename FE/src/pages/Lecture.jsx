@@ -62,7 +62,7 @@ async function createLectureSession(textbookId) {
     body: JSON.stringify({ textbookId }),
   });
   if (!res.ok) throw new Error("수업 세션 생성에 실패했습니다.");
-  return res.json(); // { sessionId, textbookId, ... } 라고 가정
+  return res.json();
 }
 
 // WebRTC ICE 서버 (기본 STUN)
@@ -96,7 +96,7 @@ function ProgressStrip({ value = 0 }) {
   );
 }
 
-/** 비디오 타일 (실제 <video> 붙이는 박스) */
+/** 비디오 타일 */
 function VideoTile({ label, videoRef, isLocal }) {
   return (
     <div className="bg-slate-800 rounded-lg relative w-full h-60 overflow-hidden">
@@ -144,7 +144,7 @@ export default function Lecture() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  // URL ?role=teacher | student 로 역할 구분 (없으면 teacher 기본)
+  // URL ?role=teacher | student
   const roleParam = searchParams.get("role");
   const [role, setRole] = useState(() =>
     roleParam === "student" ? "student" : "teacher"
@@ -161,7 +161,7 @@ export default function Lecture() {
 
   // ───────── 교재 / 페이지 상태 ─────────
   const [textbooks, setTextbooks] = useState([]);
-  const [selectedTextbookId, setSelectedTextbookId] = useState(null);
+  const [selectedTextbookId, setSelectedTextbookId] = useState(null); // 항상 string으로 다룸
   const [selectedTextbookTitle, setSelectedTextbookTitle] = useState("");
   const [selectedVersion, setSelectedVersion] = useState(1);
   const [pages, setPages] = useState([]);
@@ -189,7 +189,7 @@ export default function Lecture() {
   const [micOn, setMicOn] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
 
-  const pcRef = useRef(null); // RTCPeerConnection
+  const pcRef = useRef(null);
   const [webrtcError, setWebrtcError] = useState("");
   const [sessionInfo, setSessionInfo] = useState(null);
 
@@ -210,11 +210,9 @@ export default function Lecture() {
       try {
         let list;
         try {
-          // 실제 API 시도
           list = await fetchMyTextbooks();
         } catch (e) {
           console.error(e);
-          // ❗ API 실패 → 더미 교재로 대체
           list = [
             {
               textbook_id: 1,
@@ -237,25 +235,24 @@ export default function Lecture() {
         if (cancelled) return;
         setTextbooks(list);
 
-        const fromModalId = location.state?.textbookId;
+        const fromModalIdRaw = location.state?.textbookId;
         const fromModalTitle =
           location.state?.title || location.state?.textbookTitle;
 
-        if (fromModalId) {
-          setSelectedTextbookId(fromModalId);
-          setSelectedTextbookTitle(
-            fromModalTitle ||
-              list.find((t) => (t.textbook_id ?? t.id) === fromModalId)
-                ?.title ||
-              ""
+        if (fromModalIdRaw) {
+          const fromId = String(fromModalIdRaw);
+          setSelectedTextbookId(fromId);
+          const matched = list.find(
+            (t) => String(t.textbook_id ?? t.id) === fromId
           );
-          setSelectedVersion(1);
+          setSelectedTextbookTitle(fromModalTitle || matched?.title || "");
+          setSelectedVersion(matched?.latest_version ?? 1);
         } else if (list.length > 0) {
           const first = list[0];
-          const id = first.textbook_id ?? first.id;
-          setSelectedTextbookId(id);
+          const idStr = String(first.textbook_id ?? first.id);
+          setSelectedTextbookId(idStr);
           setSelectedTextbookTitle(first.title || "");
-          setSelectedVersion(first.latest_version || 1);
+          setSelectedVersion(first.latest_version ?? 1);
         }
       } finally {
         if (!cancelled) setTextbookLoading(false);
@@ -290,7 +287,6 @@ export default function Lecture() {
         console.error(e);
         if (cancelled) return;
 
-        // ❗ 401 등 API 실패 → 더미 페이지로 자동 대체
         setTextbookError(
           "페이지 API 오류가 발생하여 테스트용 더미 페이지를 표시합니다."
         );
@@ -317,7 +313,7 @@ export default function Lecture() {
     };
   }, [selectedTextbookId, selectedVersion]);
 
-  // 페이지 데이터를 기존 섹션 구조로 변환
+  // 페이지 데이터를 섹션 구조로 변환
   const sections = useMemo(() => {
     if (!pages.length) {
       return [
@@ -467,15 +463,13 @@ export default function Lecture() {
   }
 
   // ───────────────────────
-  // socket.io 이벤트 바인딩 (WebRTC + Editing)
+  // socket.io 이벤트 바인딩
   // ───────────────────────
   useEffect(() => {
     if (!socket) return;
 
     function handlePeerJoined(payload) {
       console.log("[Lecture] peer_joined:", payload);
-
-      // 선생님 쪽이 offer를 만들어 보내도록 고정
       if (role !== "teacher") return;
 
       (async () => {
@@ -499,8 +493,6 @@ export default function Lecture() {
 
     async function handleWebrtcOffer(payload) {
       console.log("[Lecture] webrtc_offer 수신:", payload);
-
-      // 학생만 answer 생성
       if (role !== "student") return;
 
       try {
@@ -523,8 +515,6 @@ export default function Lecture() {
 
     async function handleWebrtcAnswer(payload) {
       console.log("[Lecture] webrtc_answer 수신:", payload);
-
-      // 선생님만 answer 적용
       if (role !== "teacher") return;
 
       try {
@@ -554,9 +544,7 @@ export default function Lecture() {
       closePeerConnection();
     }
 
-    // 🔹 편집 상태 수신
     function handleEditingState(payload) {
-      // { socketId, userName, isEditing }
       setEditingPeers((prev) => {
         const without = prev.filter((p) => p.socketId !== payload.socketId);
         if (!payload.isEditing) {
@@ -599,8 +587,13 @@ export default function Lecture() {
     }
     setWebrtcError("");
 
-    // 🎯 /lectures/session 없으면 404 나도 그냥 경고만 찍고 진행
-   
+    // /lectures/session 붙일 때 사용
+    // try {
+    //   const session = await createLectureSession(selectedTextbookId);
+    //   setSessionInfo(session);
+    // } catch (e) {
+    //   console.warn("[Lecture] createLectureSession 실패, WebRTC만 진행:", e);
+    // }
 
     const rid = buildRoomId(selectedTextbookId);
     setRoomId(rid);
@@ -643,7 +636,7 @@ export default function Lecture() {
     }
   }
 
-  // 컴포넌트 들어오면 자동으로 권한 요청 + join_room
+  // 자동 join_room
   useEffect(() => {
     if (!socket) return;
     if (!selectedTextbookId) return;
@@ -669,7 +662,6 @@ export default function Lecture() {
     closePeerConnection();
     stopLocalStream();
 
-    // 편집 중이었다면 편집 종료 이벤트도 보내기
     if (editingRoomId && isEditing) {
       socket.emit("editing_state", {
         roomId: editingRoomId,
@@ -716,7 +708,7 @@ export default function Lecture() {
     console.log("[Lecture] editing join_room:", rid);
   }, [socket, selectedTextbookId, sections, pageIndex, userName, role]);
 
-  // 편집 토글 → editing_state 전송
+  // 편집 토글
   function toggleEditing() {
     if (!editingRoomId) return;
     const next = !isEditing;
@@ -770,9 +762,7 @@ export default function Lecture() {
               {roomId ? (
                 <>
                   <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-sm text-slate-600">
-                    실시간 수업 중
-                  </span>
+                  <span className="text-sm text-slate-600">실시간 수업 중</span>
                 </>
               ) : (
                 <>
@@ -788,7 +778,6 @@ export default function Lecture() {
 
       {/* 컨텐츠 */}
       <div className="max-w-[1536px] mx-auto px-6 py-6">
-        {/* 에러 메시지 */}
         {textbookError && (
           <p className="mb-2 text-xs text-red-500 whitespace-pre-line">
             {textbookError}
@@ -817,22 +806,21 @@ export default function Lecture() {
                 className="border rounded px-2 py-1 text-sm"
                 value={selectedTextbookId ?? ""}
                 onChange={(e) => {
-                  const raw = e.target.value;
-                  const nextId = raw ? Number(raw) : null;
+                  const nextId = e.target.value || null; // string 그대로
                   const tb = textbooks.find(
-                    (t) => (t.textbook_id ?? t.id) === nextId
+                    (t) => String(t.textbook_id ?? t.id) === nextId
                   );
                   setSelectedTextbookId(nextId);
                   setSelectedTextbookTitle(tb?.title || "");
-                  setSelectedVersion(tb?.latest_version || 1);
+                  setSelectedVersion(tb?.latest_version ?? 1);
                 }}
               >
                 {!textbooks.length && <option value="">교재 없음</option>}
                 {textbooks.map((tb) => {
-                  const key = tb.textbook_id ?? tb.id;
+                  const key = String(tb.textbook_id ?? tb.id);
                   return (
                     <option key={key} value={key}>
-                      {tb.title} (ID: {key})
+                      {tb.title} (ID: {key.slice(0, 8)}…)
                     </option>
                   );
                 })}
@@ -868,7 +856,7 @@ export default function Lecture() {
                 <ToolbarButton label="목록" />
                 <div className="flex-1" />
 
-                {/* 교재 편집하기 버튼 (Editing API) */}
+                {/* 교재 편집하기 버튼 */}
                 <button
                   type="button"
                   onClick={toggleEditing}
