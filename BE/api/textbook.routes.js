@@ -19,7 +19,7 @@ router.post("/", authMiddleware, async (req, res) => {
       `INSERT INTO public.textbooks (author_id, title)
        VALUES ($1, $2)
        RETURNING textbook_id, title, created_at`,
-      [req.user.user_id, title.trim()]
+      [req.user.id, title.trim()]
     );
     const textbookId = r1.rows[0].textbook_id;
 
@@ -34,7 +34,7 @@ router.post("/", authMiddleware, async (req, res) => {
       `INSERT INTO public.enrollments (user_id, textbook_id, role)
        VALUES ($1, $2, 'teacher')
        ON CONFLICT (user_id, textbook_id) DO NOTHING`,
-      [req.user.user_id, textbookId]
+      [req.user.id, textbookId]
     );
 
     await client.query("COMMIT");
@@ -60,7 +60,7 @@ router.get("/mine", authMiddleware, async (req, res) => {
        FROM public.textbooks t
        WHERE t.author_id = $1
        ORDER BY t.created_at DESC`,
-      [req.user.user_id]
+      [req.user.id]
     );
     return res.json(r.rows);
   } catch (e) {
