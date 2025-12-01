@@ -121,6 +121,30 @@ router.post("/:textbookId/versions", authMiddleware, checkEnrollment, async (req
 });
 
 router.get("/:textbookId/versions/:version/pages", authMiddleware, checkEnrollment, async (req, res) => {
+  try {
+    const { textbookId, version } = req.params;
+
+    const rV = await pool.query(
+      `SELECT version_id FROM public.textbook_versions WHERE textbook_id=$1 AND version=$2`,
+      [textbookId, version]
+    );
+    if (rV.rowCount === 0) return res.status(404).json({ message: "version not found" });
+
+    const versionId = rV.rows[0].version_id;
+
+    const rPages = await pool.query(
+      `SELECT page_id, page_number, content
+       FROM public.textbook_pages
+       WHERE version_id = $1
+       ORDER BY page_number ASC`,
+      [versionId]
+    );
+
+    return res.json(rPages.rows);
+  } catch (e) {
+    console.error("LIST PAGES ERROR:", e);
+    return res.status(500).json({ message: "list pages failed" });
+  }
 });
 
 router.post("/:textbookId/versions/:version/pages", authMiddleware, checkEnrollment, async (req, res) => {
