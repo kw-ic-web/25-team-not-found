@@ -86,7 +86,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 21098;
 server.listen(PORT, () => {
   console.log(`WebRTC signaling server on http://localhost:${PORT}`);
 });
