@@ -19,10 +19,12 @@ function roleGuard(requiredRoles) {
         [req.user.id, textbookId]
       );
       if (r2.rowCount === 0) {
+        console.warn(`roleGuard: User ${req.user.id} not enrolled in textbook ${textbookId}`);
         return res.status(403).json({ message: "해당 교재에 등록되지 않았습니다." });
       }
       const role = r2.rows[0].role;
       if (!requiredRoles.includes(role)) {
+        console.warn(`roleGuard: User ${req.user.id} has role ${role}, required ${requiredRoles}`);
         return res.status(403).json({ message: "권한이 없습니다." });
       }
       return next();

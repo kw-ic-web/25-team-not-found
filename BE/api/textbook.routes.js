@@ -121,21 +121,6 @@ router.post("/:textbookId/versions", authMiddleware, checkEnrollment, async (req
 });
 
 router.get("/:textbookId/versions/:version/pages", authMiddleware, checkEnrollment, async (req, res) => {
-  try {
-    const { textbookId, version } = req.params;
-    const r = await pool.query(
-      `SELECT p.page_id, p.page_number, p.content
-       FROM public.textbook_pages p
-       JOIN public.textbook_versions v ON p.version_id = v.version_id
-       WHERE v.textbook_id=$1 AND v.version=$2
-       ORDER BY p.page_number ASC`,
-      [textbookId, Number(version)]
-    );
-    return res.json(r.rows);
-  } catch (e) {
-    console.error("LIST PAGES ERROR:", e);
-    return res.status(500).json({ message: "list pages failed" });
-  }
 });
 
 router.post("/:textbookId/versions/:version/pages", authMiddleware, checkEnrollment, async (req, res) => {

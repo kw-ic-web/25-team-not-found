@@ -3,7 +3,7 @@ import * as QuizService from '../services/quiz.service.js';
 
 const submitSchema = Joi.object({
     answers: Joi.array().items(Joi.object({
-        question_id: Joi.number().integer().required(),
+        question_id: Joi.string().uuid().required(),
         student_answer: Joi.any().required(), // Answer can be of any type
     })).min(1).required(),
 });
