@@ -6,13 +6,35 @@ import { getWebRTCSocket } from "../lib/webrtcClient";
 const BASE = import.meta.env.VITE_API_BASE_URL;
 
 // ───────────────────────
+// Auth helpers
+// ───────────────────────
+function getAccessToken() {
+  try {
+    return localStorage.getItem("access_token");
+  } catch {
+    return null;
+  }
+}
+
+function authHeaders(includeJson = false) {
+  const token = getAccessToken();
+  return {
+    ...(includeJson ? { "Content-Type": "application/json" } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+// ───────────────────────
 // API helpers
 // ───────────────────────
 
 // 내 교재 목록
 async function fetchMyTextbooks() {
   if (!BASE) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
-  const res = await fetch(`${BASE}/textbooks/mine`);
+  const res = await fetch(`${BASE}/textbooks/mine`, {
+    method: "GET",
+    headers: authHeaders(),
+  });
   if (!res.ok) throw new Error("교재 목록을 불러올 수 없습니다.");
   return res.json(); // [{ textbook_id, title, latest_version, ... }]
 }
@@ -21,7 +43,11 @@ async function fetchMyTextbooks() {
 async function fetchTextbookPages(textbookId, version) {
   if (!BASE) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
   const res = await fetch(
-    `${BASE}/textbooks/${textbookId}/versions/${version}/pages`
+    `${BASE}/textbooks/${textbookId}/versions/${version}/pages`,
+    {
+      method: "GET",
+      headers: authHeaders(),
+    }
   );
   if (!res.ok) throw new Error("페이지 API 응답이 정상이 아닙니다.");
   return res.json(); // [{ page_id, page_number, content }, ...]
@@ -32,7 +58,7 @@ async function createLectureSession(textbookId) {
   if (!BASE) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
   const res = await fetch(`${BASE}/lectures/session`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders(true),
     body: JSON.stringify({ textbookId }),
   });
   if (!res.ok) throw new Error("수업 세션 생성에 실패했습니다.");
@@ -130,7 +156,6 @@ export default function Lecture() {
   }, [roleParam]);
 
   const [userName] = useState(() => {
-    // 나중에 원하면 로그인 정보에서 닉네임 가져와도 됨
     return role === "teacher" ? "선생님" : "학생";
   });
 
@@ -448,7 +473,6 @@ export default function Lecture() {
     if (!socket) return;
 
     function handlePeerJoined(payload) {
-      // { socketId, userName }
       console.log("[Lecture] peer_joined:", payload);
 
       // 선생님 쪽이 offer를 만들어 보내도록 고정
@@ -474,7 +498,6 @@ export default function Lecture() {
     }
 
     async function handleWebrtcOffer(payload) {
-      // { sdp, senderId }
       console.log("[Lecture] webrtc_offer 수신:", payload);
 
       // 학생만 answer 생성
@@ -483,9 +506,7 @@ export default function Lecture() {
       try {
         await ensureLocalStream();
         const pc = createPeerConnection();
-        await pc.setRemoteDescription(
-          new RTCSessionDescription(payload.sdp)
-        );
+        await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
         if (roomIdRef.current) {
@@ -501,7 +522,6 @@ export default function Lecture() {
     }
 
     async function handleWebrtcAnswer(payload) {
-      // { sdp, senderId }
       console.log("[Lecture] webrtc_answer 수신:", payload);
 
       // 선생님만 answer 적용
@@ -510,9 +530,7 @@ export default function Lecture() {
       try {
         const pc = pcRef.current;
         if (!pc) return;
-        await pc.setRemoteDescription(
-          new RTCSessionDescription(payload.sdp)
-        );
+        await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
       } catch (e) {
         console.error(e);
         setWebrtcError("WebRTC answer 적용 중 오류가 발생했습니다.");
@@ -520,14 +538,11 @@ export default function Lecture() {
     }
 
     async function handleWebrtcIce(payload) {
-      // { candidate, senderId }
       console.log("[Lecture] webrtc_ice 수신:", payload);
       try {
         const pc = pcRef.current;
         if (!pc) return;
-        await pc.addIceCandidate(
-          new RTCIceCandidate(payload.candidate)
-        );
+        await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
       } catch (e) {
         console.error(e);
         setWebrtcError("ICE candidate 적용 중 오류가 발생했습니다.");
@@ -535,7 +550,6 @@ export default function Lecture() {
     }
 
     function handlePeerLeft(payload) {
-      // { socketId }
       console.log("[Lecture] peer_left:", payload);
       closePeerConnection();
     }
@@ -544,9 +558,7 @@ export default function Lecture() {
     function handleEditingState(payload) {
       // { socketId, userName, isEditing }
       setEditingPeers((prev) => {
-        const without = prev.filter(
-          (p) => p.socketId !== payload.socketId
-        );
+        const without = prev.filter((p) => p.socketId !== payload.socketId);
         if (!payload.isEditing) {
           return without;
         }
@@ -588,15 +600,7 @@ export default function Lecture() {
     setWebrtcError("");
 
     // 🎯 /lectures/session 없으면 404 나도 그냥 경고만 찍고 진행
-    try {
-      const session = await createLectureSession(selectedTextbookId);
-      setSessionInfo(session);
-    } catch (e) {
-      console.warn(
-        "[Lecture] createLectureSession 실패, WebRTC만 진행:",
-        e
-      );
-    }
+   
 
     const rid = buildRoomId(selectedTextbookId);
     setRoomId(rid);
@@ -698,9 +702,7 @@ export default function Lecture() {
         : null;
 
     const pageIdForRoom =
-      currentItem?.pageId ??
-      currentItem?.page_number ??
-      `dummy-${pageIndex + 1}`;
+      currentItem?.pageId ?? currentItem?.page_number ?? `dummy-${pageIndex + 1}`;
 
     const rid = buildEditRoomId(selectedTextbookId, pageIdForRoom);
     if (!rid) return;
@@ -746,9 +748,7 @@ export default function Lecture() {
               E
             </div>
             <div className="flex flex-col">
-              <strong className="text-slate-800 leading-none">
-                EduNote
-              </strong>
+              <strong className="text-slate-800 leading-none">EduNote</strong>
               <span id="title">
                 {textbookLoading
                   ? "교재를 불러오는 중..."
@@ -763,9 +763,7 @@ export default function Lecture() {
           {/* 상태 */}
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-end text-xs text-slate-500">
-              <span>
-                역할: {role === "teacher" ? "선생님" : "학생"}
-              </span>
+              <span>역할: {role === "teacher" ? "선생님" : "학생"}</span>
               <span>사용자: {userName || "-"}</span>
             </div>
             <div className="flex items-center gap-2">
@@ -779,9 +777,7 @@ export default function Lecture() {
               ) : (
                 <>
                   <span className="w-3 h-3 rounded-full bg-slate-300" />
-                  <span className="text-sm text-slate-500">
-                    수업 대기 중
-                  </span>
+                  <span className="text-sm text-slate-500">수업 대기 중</span>
                 </>
               )}
             </div>
@@ -805,10 +801,8 @@ export default function Lecture() {
         )}
         {!!editingPeers.length && (
           <p className="mb-2 text-xs text-emerald-600">
-            {editingPeers
-              .map((p) => p.userName || "다른 사용자")
-              .join(", ")}{" "}
-            님이 이 페이지를 편집 중입니다.
+            {editingPeers.map((p) => p.userName || "다른 사용자").join(", ")} 님이
+            이 페이지를 편집 중입니다.
           </p>
         )}
 
@@ -833,9 +827,7 @@ export default function Lecture() {
                   setSelectedVersion(tb?.latest_version || 1);
                 }}
               >
-                {!textbooks.length && (
-                  <option value="">교재 없음</option>
-                )}
+                {!textbooks.length && <option value="">교재 없음</option>}
                 {textbooks.map((tb) => {
                   const key = tb.textbook_id ?? tb.id;
                   return (
@@ -876,7 +868,7 @@ export default function Lecture() {
                 <ToolbarButton label="목록" />
                 <div className="flex-1" />
 
-                {/* 🔹 교재 편집하기 버튼 (Editing API) */}
+                {/* 교재 편집하기 버튼 (Editing API) */}
                 <button
                   type="button"
                   onClick={toggleEditing}
@@ -889,7 +881,7 @@ export default function Lecture() {
                   {isEditing ? "편집 중..." : "교재 편집하기"}
                 </button>
 
-                {/* 기존 완료 표시 버튼 */}
+                {/* 완료 표시 버튼 */}
                 <button
                   type="button"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#13A4EC] text-white shadow-sm"
@@ -921,9 +913,7 @@ export default function Lecture() {
             <div className="p-4 flex items-center justify-center gap-4">
               <button
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#13A4EC] text-white shadow-sm disabled:opacity-50"
-                onClick={() =>
-                  setPageIndex((p) => Math.max(0, p - 1))
-                }
+                onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
                 disabled={pageIndex <= 0}
               >
                 이전
@@ -934,9 +924,7 @@ export default function Lecture() {
               <button
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#13A4EC] text-white shadow-sm disabled:opacity-50"
                 onClick={() =>
-                  setPageIndex((p) =>
-                    Math.min(totalPage - 1, p + 1)
-                  )
+                  setPageIndex((p) => Math.min(totalPage - 1, p + 1))
                 }
                 disabled={pageIndex >= totalPage - 1}
               >
@@ -950,9 +938,7 @@ export default function Lecture() {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-bold text-slate-800 mb-1">
                 화상 통화 ·{" "}
-                {role === "teacher"
-                  ? "선생님 화면"
-                  : "학생 화면"}
+                {role === "teacher" ? "선생님 화면" : "학생 화면"}
               </h3>
               <p className="text-xs text-slate-500 mb-3">
                 roomId: {roomId || "(미입장)"}
@@ -960,18 +946,12 @@ export default function Lecture() {
 
               <div className="space-y-4">
                 <VideoTile
-                  label={
-                    role === "teacher"
-                      ? "선생님 (나)"
-                      : "학생 (나)"
-                  }
+                  label={role === "teacher" ? "선생님 (나)" : "학생 (나)"}
                   videoRef={localVideoRef}
                   isLocal
                 />
                 <VideoTile
-                  label={
-                    role === "teacher" ? "학생" : "선생님"
-                  }
+                  label={role === "teacher" ? "학생" : "선생님"}
                   videoRef={remoteVideoRef}
                   isLocal={false}
                 />

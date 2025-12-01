@@ -1,17 +1,40 @@
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import ic_logo from "../assets/icons/ic_logo.svg";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function TeacherStudent() {
+  const navigate = useNavigate();
+
+  // 로그인 유저 정보 (Login.jsx에서 localStorage.user에 저장)
+  const [user, setUser] = useState(null);
+
+  // 학생 목록 / 교재 상태
   const [students, setStudents] = useState([]);
-  const [apiStatus, setApiStatus] = useState(""); // 학생 목록 API 
+  const [apiStatus, setApiStatus] = useState(""); // 학생 목록 API 상태
 
   const [textbooks, setTextbooks] = useState([]); // 내 교재 목록
-  const [textbookStatus, setTextbookStatus] = useState(""); // 교재 목록 API 
+  const [textbookStatus, setTextbookStatus] = useState(""); // 교재 목록 API 상태
 
   const [selectedTextbookId, setSelectedTextbookId] = useState("");
   const [selectedVersion, setSelectedVersion] = useState("");
+
+  // 로그인 유저 정보 로드
+  useEffect(() => {
+    const raw = localStorage.getItem("user");
+    if (!raw) {
+      navigate("/login");
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw);
+      setUser(parsed);
+    } catch (e) {
+      console.error("user 파싱 실패:", e);
+      navigate("/login");
+    }
+  }, [navigate]);
 
   // 현재 선택된 교재 제목
   const selectedTextbookTitle = useMemo(() => {
@@ -19,7 +42,19 @@ export default function TeacherStudent() {
     return found ? found.title : "";
   }, [textbooks, selectedTextbookId]);
 
-  // 내 교재 목록
+  // 로그아웃
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
+  // 대시보드 이동
+  const goDashboard = () => {
+    navigate("/teacher");
+  };
+
+  // 내 교재 목록 불러오기
   useEffect(() => {
     async function fetchTextbooks() {
       try {
@@ -34,7 +69,7 @@ export default function TeacherStudent() {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // 명세서대로 Bearer 토큰
           },
         });
 
@@ -45,8 +80,9 @@ export default function TeacherStudent() {
           return;
         }
 
-        const data = await res.json(); 
+        const data = await res.json();
         setTextbooks(data);
+
         if (data.length === 0) {
           setTextbookStatus("생성된 교재가 없습니다. 교재를 먼저 만들어야 합니다.");
           return;
@@ -54,7 +90,7 @@ export default function TeacherStudent() {
 
         setTextbookStatus(`교재 ${data.length}개 로드 완료`);
 
-        // 기본 선택 첫 번째 교재 
+        // 기본 선택: 첫 번째 교재
         setSelectedTextbookId(data[0].textbook_id);
         setSelectedVersion(data[0].latest_version ?? 1);
       } catch (err) {
@@ -66,7 +102,7 @@ export default function TeacherStudent() {
     fetchTextbooks();
   }, []);
 
-  // 학생 목록
+  // 학생 목록 불러오기
   useEffect(() => {
     async function fetchStudents() {
       try {
@@ -89,7 +125,7 @@ export default function TeacherStudent() {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // 명세서대로 Bearer 토큰
           },
         });
 
@@ -123,26 +159,37 @@ export default function TeacherStudent() {
       {/* 헤더 */}
       <header className="sticky top-0 z-10 bg-white/70 backdrop-blur-md">
         <div className="w-full max-w-screen-2xl mx-auto h-[68.5px] px-10 flex items-center justify-between">
-          {/* 왼쪽 */}
-          <div className="flex items-center gap-3 cursor-pointer">
-            <img src={ic_logo} alt="EduNote logo" className="w-7 h-7 shrink-0" />
-            <div className="text-[20px] leading-7 font-bold text-gray-900">EduNote</div>
+          {/* 왼쪽*/}
+          <div className="flex items-center gap-3 cursor-pointer" onClick={goDashboard}>
+          <img src={ic_logo} alt="EduNote" className="w-9 h-9 shrink-0" />
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 truncate">
+              EduNote · 학생 관리
+            </h1>
           </div>
 
           {/* 오른쪽 */}
           <div className="flex items-center gap-4">
-            <a
-              href="/"
+            <button
+              type="button"
+              onClick={goDashboard}
               className="inline-flex items-center gap-2 h-10 px-3 rounded-md bg-neutral-100 text-neutral-800"
             >
               <span className="text-sm font-medium">대시보드</span>
-            </a>
+            </button>
 
             <div className="flex items-center gap-3">
               <img className="w-10 h-10 rounded-full object-cover" />
               <div className="leading-tight">
-                <div className="text-base font-bold text-neutral-800">교사</div>
-                <button className="text-sm text-red-500">로그아웃</button>
+                <div className="text-base font-bold text-neutral-800">
+                  {user?.nickname || "교사"}
+                </div>
+                <button
+                  type="button"
+                  className="text-sm text-red-500"
+                  onClick={handleLogout}
+                >
+                  로그아웃
+                </button>
               </div>
             </div>
           </div>
@@ -155,7 +202,9 @@ export default function TeacherStudent() {
           {/* 제목 */}
           <div className="space-y-1">
             <h1 className="text-2xl font-bold text-neutral-800">학생 관리</h1>
-            <p className="text-sm text-neutral-500">학생 데이터와 학업 현황을 관리하세요.</p>
+            <p className="text-sm text-neutral-500">
+              학생 데이터와 학업 현황을 관리하세요.
+            </p>
           </div>
 
           {/* 교재 선택 */}
@@ -187,7 +236,8 @@ export default function TeacherStudent() {
                     >
                       <span className="font-medium truncate">{tb.title}</span>
                       <span className="mt-0.5 text-[11px] text-neutral-500">
-                        ID: {tb.textbook_id.slice(0, 8)}… / 최신 버전: {tb.latest_version ?? 1}
+                        ID: {String(tb.textbook_id).slice(0, 8)}… / 최신 버전:{" "}
+                        {tb.latest_version ?? 1}
                       </span>
                     </button>
                   );
@@ -203,18 +253,23 @@ export default function TeacherStudent() {
               href="#"
               aria-current="page"
             >
-              <span className="inline-block w-6 h-6 rounded bg-sky-500/90" />
+              <span className="inline-block w-4 h-4 rounded bg-sky-500/90" />
               <span className="text-base font-medium">전체 학생</span>
             </a>
-            <a className="flex items-center gap-3 h-10 px-3 rounded-lg hover:bg-neutral-100" href="#">
-              <span className="inline-block w-6 h-6 rounded bg-neutral-900/90" />
+            <a
+              className="flex items-center gap-3 h-10 px-3 rounded-lg hover:bg-neutral-100"
+              href="#"
+            >
+              <span className="inline-block w-4 h-4 rounded bg-neutral-900/90" />
               <span className="text-base text-neutral-800">위기 학생</span>
             </a>
           </nav>
 
           {/* 검색 & 필터 */}
           <section className="relative">
-            <h3 className="mb-4 text-[17.7px] font-bold text-neutral-800">검색 & 필터</h3>
+            <h3 className="mb-4 text-[17.7px] font-bold text-neutral-800">
+              검색 & 필터
+            </h3>
 
             {/* 검색 */}
             <div className="relative mb-6">
@@ -227,7 +282,9 @@ export default function TeacherStudent() {
 
             {/* 정렬 기준 */}
             <div className="mb-6 space-y-2">
-              <label className="text-sm font-medium text-neutral-600">정렬 기준</label>
+              <label className="text-sm font-medium text-neutral-600">
+                정렬 기준
+              </label>
               <div className="relative">
                 <select className="w-full h-10 rounded-lg border border-neutral-300 bg-neutral-100 px-3 pr-8 text-[16px]">
                   <option>이름 (A-Z)</option>
@@ -244,7 +301,9 @@ export default function TeacherStudent() {
 
             {/* 상태 필터 */}
             <div className="space-y-2">
-              <div className="text-sm font-medium text-neutral-600">상태 필터</div>
+              <div className="text-sm font-medium text-neutral-600">
+                상태 필터
+              </div>
 
               <label className="flex items-center gap-2 text-neutral-800">
                 <input
@@ -279,6 +338,7 @@ export default function TeacherStudent() {
           </section>
 
           <div className="grow" />
+
           <section className="space-y-3">
             <h3 className="text-lg font-bold text-neutral-800">일괄 작업</h3>
             <button className="w-full h-10 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600">
@@ -290,6 +350,7 @@ export default function TeacherStudent() {
           </section>
         </aside>
 
+        {/* 학생 테이블 */}
         <section className="flex-1 min-w-0 px-40 py-8 overflow-y-auto">
           <div className="max-w-[1280px] mx-auto space-y-6">
             {/* 제목 + API 상태 */}
@@ -297,35 +358,48 @@ export default function TeacherStudent() {
               <h2 className="text-2xl font-bold text-neutral-800">전체 학생</h2>
               {selectedTextbookTitle && (
                 <p className="mt-0.5 text-sm text-neutral-600">
-                  선택된 교재: <span className="font-semibold">{selectedTextbookTitle}</span>{" "}
+                  선택된 교재:{" "}
+                  <span className="font-semibold">{selectedTextbookTitle}</span>{" "}
                   (version: {selectedVersion || "?"})
                 </p>
               )}
               {apiStatus && (
-                <p className="mt-1 text-xs text-neutral-500">
-                  {apiStatus}
-                </p>
+                <p className="mt-1 text-xs text-neutral-500">{apiStatus}</p>
               )}
             </div>
 
             <div className="bg-white border border-neutral-200 rounded-lg overflow-hidden">
-            
+              {/* 헤더 row */}
               <div className="bg-neutral-50">
                 <div className="grid grid-cols-[106.5px_319.5px_213px_213px_203.56px_121.69px_100.75px]">
                   <div className="px-4 py-3">
-                    <input type="checkbox" className="w-4 h-4 rounded border-neutral-500" />
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 rounded border-neutral-500"
+                    />
                   </div>
-                  <div className="px-4 py-3 text-sm font-medium text-neutral-800">이름</div>
-                  <div className="px-4 py-3 text-sm font-medium text-neutral-800">최근 접속</div>
-                  <div className="px-4 py-3 text-sm font-medium text-neutral-800">진도율</div>
+                  <div className="px-4 py-3 text-sm font-medium text-neutral-800">
+                    이름
+                  </div>
+                  <div className="px-4 py-3 text-sm font-medium text-neutral-800">
+                    최근 접속
+                  </div>
+                  <div className="px-4 py-3 text-sm font-medium text-neutral-800">
+                    진도율
+                  </div>
                   <div className="px-4 py-3 text-sm font-medium text-neutral-800">
                     평균 퀴즈 점수
                   </div>
-                  <div className="px-4 py-3 text-sm font-medium text-neutral-800">출석</div>
-                  <div className="px-4 py-3 text-sm font-medium text-neutral-800">작업</div>
+                  <div className="px-4 py-3 text-sm font-medium text-neutral-800">
+                    출석
+                  </div>
+                  <div className="px-4 py-3 text-sm font-medium text-neutral-800">
+                    작업
+                  </div>
                 </div>
               </div>
 
+              {/* 데이터 row들 */}
               <div className="divide-y divide-neutral-200">
                 {students.map((s) => {
                   const isDanger = s.risk === "danger";
@@ -351,10 +425,13 @@ export default function TeacherStudent() {
                       className={`grid grid-cols-[106.5px_319.5px_213px_213px_203.56px_121.69px_100.75px] h-[65px] ${rowClass}`}
                     >
                       <div className="px-4 py-6">
-                        <input type="checkbox" className="w-4 h-4 rounded border-neutral-500" />
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-neutral-500"
+                        />
                       </div>
 
-                      {/* 이름 이메일 */}
+                      {/* 이름 / 이메일 */}
                       <div className="px-4 py-3">
                         <div className={nameClass}>{s.nickname}</div>
                         <div className={emailClass}>{s.email}</div>
@@ -368,24 +445,34 @@ export default function TeacherStudent() {
                       {/* 진도율 */}
                       <div className="px-4 py-4">
                         <div className="flex items-center gap-2">
-                          <div className={`relative w-24 h-2 rounded-full ${barBg}`}>
+                          <div
+                            className={`relative w-24 h-2 rounded-full ${barBg}`}
+                          >
                             <div
                               className={`absolute inset-y-0 left-0 rounded-full ${barFill}`}
-                              style={{ width: `${s.progress_pct ?? 0}%` }}
+                              style={{
+                                width: `${s.progress_pct ?? 0}%`,
+                              }}
                             />
                           </div>
-                          <span className={mainText}>{s.progress_pct ?? 0}%</span>
+                          <span className={mainText}>
+                            {s.progress_pct ?? 0}%
+                          </span>
                         </div>
                       </div>
 
                       {/* 평균 퀴즈 점수 */}
                       <div className="px-4 py-4">
-                        <span className={mainText}>{s.avg_quiz_score ?? 0}%</span>
+                        <span className={mainText}>
+                          {s.avg_quiz_score ?? 0}%
+                        </span>
                       </div>
 
                       {/* 출석 */}
                       <div className="px-4 py-4">
-                        <span className={mainText}>{s.attendance_pct ?? 0}%</span>
+                        <span className={mainText}>
+                          {s.attendance_pct ?? 0}%
+                        </span>
                       </div>
 
                       {/* 작업 */}

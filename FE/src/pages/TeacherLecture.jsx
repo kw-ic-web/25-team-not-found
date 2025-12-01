@@ -1,195 +1,140 @@
+// FE/src/pages/TeacherLecture.jsx
+import { useState } from "react";
+import TextbookSelectModal from "../components/teacher/TextbookSelectModal";
 import ic_logo from "../assets/icons/ic_logo.svg";
+
 export default function TeacherLecture() {
+  const [isTextbookModalOpen, setIsTextbookModalOpen] = useState(false);
+  const [selectedBook, setSelectedBook] = useState(null);
+
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-100 to-white">
-      {/* 헤더 */}
-      <header className="sticky top-0 z-10 h-16 bg-white/90 backdrop-blur-sm">
-        <div className="mx-auto h-full max-w-screen-xl px-6 flex items-center justify-between">
-          {/* 왼 */}
-          <div className="flex items-center gap-3">
-            <button
-              className="inline-flex items-center gap-2 h-9 px-3 rounded-lg bg-sky-500 text-white shadow-sm"
-              onClick={() => history.back()}
-            >
+    <div className="min-h-screen bg-[#F6F7F8] flex flex-col">
+      {/* Header */}
+      <header className="h-[65px] bg-white border-b border-slate-200">
+  <div className="mx-auto max-w-[1746px] h-full px-6 flex items-center justify-between">
+    {/* 왼쪽: 로고 + 상태 */}
+    <div className="flex items-center gap-4">
+      {/* 로고 부분 */}
+      <div className="flex items-center gap-2">
+        <img
+          src={ic_logo}
+          alt="EduNote logo"
+          className="w-8 h-8 rounded-md"
+        />
+        <span className="text-[20px] font-bold text-slate-800">EduNote</span>
+      </div>
 
-              <span className="inline-block w-4 h-4 border-b-2 border-l-2 rotate-45 -translate-y-px" />
-              <span className="text-sm font-medium">뒤로가기</span>
-            </button>
+      {/* 실시간 연결 준비 */}
+      <div className="flex items-center gap-2 pl-4 border-l border-slate-200">
+        <div className="w-6 h-6 rounded-full bg-[#EF4444]" />
+        <span className="text-[14px] font-medium text-slate-500">
+          실시간 연결 준비
+        </span>
+      </div>
+    </div>
 
-            <div className="flex items-center gap-3 cursor-pointer">
-  <img src={ic_logo} alt="EduNote logo" className="w-7 h-7 shrink-0" />
-  <div className="text-[20px] leading-7 font-bold text-gray-900">EduNote</div>
-</div>
-            </div>
+    {/* 오른쪽: 대시보드 버튼 + 프로필 동그라미 */}
+    <div className="flex items-center gap-3">
+      <button className="h-10 px-4 rounded-lg border border-slate-300 bg-white text-[14px] text-slate-900">
+        대시보드
+      </button>
+      <div className="w-10 h-10 rounded-full bg-slate-200" />
+    </div>
+  </div>
+</header>
 
-          {/* 오른쪽 */}
-          <div className="flex items-center gap-4">
-            <a href="/" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100">
-              <div className="w-6 h-6 rounded bg-gray-600/90" />
-              <span className="text-sm text-gray-600">대시보드</span>
-            </a>
 
-            <button className="inline-flex items-center gap-2 h-10">
-              <img
-                className="w-10 h-10 rounded-full object-cover"
-                
-                alt="사용자"
-              />
-              <span className="text-sm font-semibold text-gray-800">사용자</span>
-              <span className="w-6 h-6 grid place-items-center text-gray-500">▾</span>
-            </button>
+      {/* Main */}
+<main className="flex-1 flex items-center justify-center py-10">
+  <div className="max-w-[1536px] w-full px-6 flex flex-col lg:flex-row gap-6">
+    {/* Left: 수업 준비 영역 */}
+    <section className="flex-1 bg-white rounded-lg shadow-sm p-8 flex flex-col gap-4">
+      <div>
+        <h2 className="text-[20px] font-bold text-slate-900">
+          수업 준비 중
+        </h2>
+        <p className="mt-1 text-[14px] text-slate-600">
+          화상통화 연결이 완료되었습니다. 수업에 사용할 교재를 선택해주세요.
+        </p>
+      </div>
 
-            <button className="inline-flex items-center h-10 px-4 rounded-lg bg-sky-500 text-white hover:bg-sky-600 text-sm shadow">
-              저장
-            </button>
-          </div>
+      {/* 선택된 교재 없음 박스 */}
+      <div className="mt-4 border border-dashed border-slate-300 rounded-xl px-10 py-12 flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-4">
+          
+
+          <p className="max-w-[335px] text-center text-[16px] leading-6 text-slate-600">
+            현재 선택된 교재가 없습니다. 아래 버튼을 눌러 수업에 사용할
+            교재를 선택하세요.
+          </p>
         </div>
-      </header>
 
-      {/* 메인 컨테이너 마진 */}
-      <main className="flex-1">
-        <div className="mx-auto max-w-screen-xl px-6 py-8">
-          {/* 제목 */}
-          <div className="mb-8">
-            <h2 className="text-[30px] leading-9 font-bold text-slate-900">수업 시작</h2>
-          </div>
+        {/* 교재 선택하기 버튼 */}
+        <button
+  type="button"
+  onClick={() => setIsTextbookModalOpen(true)}
+  className="inline-flex items-center gap-2 px-5 h-11 rounded-lg bg-[#13A4EC] text-white text-[16px] font-bold shadow-sm"
+>
+  <span className="text-lg font-bold leading-none text-white">+</span>
+  <span>교재 선택하기</span>
+</button>
 
-          {/* 컬럼 */}
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] gap-8">
-            
-            <div className="grid grid-cols-1 gap-8">
-              {/* 수업 설정 */}
-              <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
-                <h3 className="text-[20px] leading-7 font-semibold text-slate-800 mb-4">수업 설정</h3>
+      </div>
 
-                <div className="grid gap-6">
-                  {/* 교재/수업 선택 */}
-                  <div className="grid gap-2">
-                    <label className="text-sm font-medium text-slate-600">수업 내용</label>
-                    <div className="relative">
-                      <select
-                        className="w-full h-10 rounded-lg border border-slate-300 bg-gray-100 px-3 pr-9 text-[16px] text-slate-800"
-                        defaultValue=""
-                      >
-                        <option value="" disabled>교재 또는 수업 선택</option>
-                        <option value="algebra">대수학 복습</option>
-                        <option value="design">현대 디자인의 원리</option>
-                      </select>
-                      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">⌄</span>
-                    </div>
-                  </div>
-
-                  {/* 세션 제목 */}
-                  <div className="grid gap-2">
-                    <label className="text-sm font-medium text-slate-600">세션 제목(선택)</label>
-                    <input
-                      className="w-full h-10 rounded-lg border border-slate-300 bg-gray-100 px-3 text-[16px] placeholder:text-gray-500"
-                      placeholder="예: 대수학 기초 복습"
-                    />
-                  </div>
-
-                  {/* 세션 설명 */}
-                  <div className="grid gap-2">
-                    <label className="text-sm font-medium text-slate-600">세션 설명(선택)</label>
-                    <textarea
-                      className="w-full min-h-[90px] rounded-lg border border-slate-300 bg-gray-100 px-3 py-2 text-[16px] placeholder:text-gray-500"
-                      placeholder="..."
-                    />
-                  </div>
-
-                  {/* 예상 수업 시간  */}
-                  <div className="grid gap-2">
-                    <label className="text-sm font-medium text-slate-600">예상 수업 시간: 45분</label>
-                    <div className="w-full h-2 bg-slate-300 rounded-lg">
-                      <div className="h-2 w-1/2 bg-sky-500 rounded-lg" />
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* 메모/지시사항 */}
-              <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
-                <h3 className="text-[20px] leading-7 font-semibold text-slate-800 mb-4">
-                  세션 메모/지시사항(선택)
-                </h3>
-                <textarea
-                  className="w-full min-h-[114px] rounded-lg border border-slate-300 bg-gray-100 px-3 py-2 text-[16px] placeholder:text-gray-500"
-                  placeholder="수업 중 참고할 개인 메모나 지시사항을 입력하세요..."
-                />
-              </section>
+            {/* 선택된 교재 표시 */}
+            <div className="mt-4 text-[12px] text-slate-500">
+              선택된 교재:{" "}
+              <span className="font-medium">
+                {selectedBook ? selectedBook.title : "없음"}
+              </span>
             </div>
+          </section>
 
-            {/* 오른쪽 */}
-            <aside className="grid grid-cols-1 gap-8">
-              {/* 학생 매칭 */}
-              <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
-                <h3 className="text-[20px] leading-7 font-semibold text-slate-800 mb-4">
-                  학생 매칭
-                </h3>
+          {/* Right: 화상 통화 영역 */}
+          <aside className="w-full lg:w-[480px] bg-white rounded-lg shadow-sm p-6 flex flex-col gap-4">
+            <h3 className="text-[18px] font-bold text-slate-900">화상 통화</h3>
 
-                <div className="rounded-lg bg-amber-50 text-amber-600 px-3 py-3 mb-3 inline-flex items-center gap-3">
-                  <div className="w-6 h-6 rounded bg-amber-600/20 grid place-items-center">
-                    <span className="text-[12px]">!</span>
-                  </div>
-                  <span className="text-sm font-medium">연결 상태: 학생 대기 중...</span>
+            <div className="flex flex-col gap-4 flex-1">
+              {/* 선생님 화면 */}
+              <div className="relative w-full h-[243px] rounded-lg bg-slate-900">
+                <div className="absolute left-2 bottom-2 px-2 py-0.5 rounded bg-black/60">
+                  <span className="text-[12px] text-white">선생님</span>
                 </div>
+              </div>
 
-                <p className="text-sm text-slate-500 mb-3">
-                  배정 학생 자동 매칭: <span className="text-slate-600">Liam Carter</span>
-                </p>
+              {/* 나 화면 */}
+              <div className="relative w-full h-[243px] rounded-lg bg-slate-800">
+                <div className="absolute left-2 bottom-2 px-2 py-0.5 rounded bg-black/60">
+                  <span className="text-[12px] text-white">나</span>
+                </div>
+              </div>
 
-                <button className="w-full h-10 rounded-lg bg-sky-50 text-sky-600 font-semibold hover:bg-sky-100">
-                  학생 수동 초대
+              {/* 하단 컨트롤 버튼들 */}
+              <div className="mt-2 flex items-center justify-center gap-3">
+                <button className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center">
+                  <span className="w-6 h-7 bg-slate-800 rounded" />
                 </button>
-              </section>
-
-              {/* 연결 상태 */}
-              <section className="relative bg-white border border-slate-200 rounded-xl shadow-sm p-6">
-                <h3 className="text-[20px] leading-7 font-semibold text-slate-800 mb-4">연결 상태</h3>
-
-                <div className="grid gap-3">
-                  {/* 더미 1 */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">학생 연결:</span>
-                    <span className="inline-flex items-center gap-2">
-                      <span className="inline-block w-4 h-4 rounded bg-red-600/10 border border-red-600" />
-                      <span className="text-sm font-medium text-red-600">연결 안 됨</span>
-                    </span>
-                  </div>
-
-                  {/* 더미 2 */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">준비 상태:</span>
-                    <span className="inline-flex items-center gap-2">
-                      <span className="inline-block w-4 h-4 rounded bg-red-600/10 border border-red-600" />
-                      <span className="text-sm font-medium text-red-600">준비 안 됨</span>
-                    </span>
-                  </div>
-                </div>
-              </section>
-            </aside>
-          </div>
-
-          {/* 연결 시 */}
-          <div className="mt-8 flex items-start justify-end">
-            <button
-              disabled
-              className="inline-flex items-center gap-3 h-13 px-8 py-3 rounded-lg bg-slate-300 text-slate-600 font-bold shadow-md disabled:opacity-100"
-              title="학생이 연결되어 준비 완료되면 활성화됩니다."
-            >
-              <span className="w-6 h-6 rounded bg-slate-500/40" />
-              수업 시작
-            </button>
-          </div>
-
-          {/* 배너 */}
-          <div className="mt-4 rounded-r-lg bg-sky-50 border-l-4 border-sky-300 px-5 py-4">
-            <p className="text-sky-600 font-semibold">
-              개발 메모: 학생이 연결되어 준비 완료되면 ‘수업 시작’ 버튼이 활성화됩니다.
-            </p>
-          </div>
+                <button className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center">
+                  <span className="w-6 h-7 bg-slate-800 rounded" />
+                </button>
+                <button className="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center">
+                  <span className="w-6 h-7 bg-white rounded" />
+                </button>
+              </div>
+            </div>
+          </aside>
         </div>
       </main>
+
+      {/* 교재 선택 모달 */}
+      <TextbookSelectModal
+        open={isTextbookModalOpen}
+        onClose={() => setIsTextbookModalOpen(false)}
+        onConfirm={(book) => {
+          setSelectedBook(book);
+          setIsTextbookModalOpen(false);
+        }}
+      />
     </div>
-  )
+  );
 }

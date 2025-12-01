@@ -7,6 +7,14 @@ import { useNavigate } from "react-router-dom";
 const TeacherSidebar = () => {
   const [activatedBtn, setActivatedBtn] = useState(0);
   const navigate = useNavigate();
+  const handleClickStartButton = () => {
+    setActivatedBtn(3);
+    setIsClassStartOpen(true); // 강의 시작
+  };
+  const handleStartClass = () => {
+    setIsClassStartOpen(false);   // 모달 닫기
+    navigate("/teacher/lecture"); // 여기서 페이지 이동
+  };
   return (
     <aside className="w-[287px] shrink-0 bg-white border-r border-[#E2E8F0]">
       {/* 상단 로고 */}
@@ -53,15 +61,16 @@ const TeacherSidebar = () => {
         </SidebarBtn>
 
         <SidebarBtn
-          Icon={Classroom}
-          isActivated={activatedBtn === 3}
-          onClick={() => {
-            setActivatedBtn(3);
-            navigate("/teacher/lecture"); // 강의 시작 
-          }}
-        >
-          강의 시작
-        </SidebarBtn>
+  Icon={Classroom}
+  isActivated={activatedBtn === 3}
+  onClick={() => {
+    setActivatedBtn(3);
+    setIsStartClassOpen(true); // 모달만 열기
+  }}
+>
+  강의 시작
+</SidebarBtn>
+
 
         <SidebarBtn
           Icon={Dashboard}
