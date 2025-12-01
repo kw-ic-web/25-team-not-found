@@ -15,7 +15,7 @@ router.post("/", authMiddleware, async (req, res) => {
        VALUES ($1, $2, $3)
        ON CONFLICT (user_id, textbook_id) DO NOTHING
        RETURNING enrollment_id, role, created_at`,
-      [req.user.user_id, textbook_id, myRole]
+      [req.user.id, textbook_id, myRole]
     );
     if (r.rowCount === 0) {
       return res.status(409).json({ message: "이미 등록되어 있습니다." });
