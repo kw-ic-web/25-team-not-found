@@ -30,14 +30,14 @@ router.post("/reads", authMiddleware, async (req, res) => {
          last_read_at = now(),
          read_count   = public.page_reads.read_count + 1
        RETURNING read_id`,
-      [req.user.user_id, page_id]
+      [req.user.id, page_id]
     );
 
     await client.query(
       `UPDATE public.enrollments
           SET last_accessed = now()
         WHERE user_id=$1 AND textbook_id=$2`,
-      [req.user.user_id, textbookId]
+      [req.user.id, textbookId]
     );
 
     await client.query("COMMIT");

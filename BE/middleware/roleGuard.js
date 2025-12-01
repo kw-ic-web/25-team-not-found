@@ -7,16 +7,16 @@ function roleGuard(requiredRoles) {
       if (!textbookId) {
         return res.status(400).json({ message: "textbookId가 필요합니다." });
       }
-    
+
       const r1 = await pool.query(
         `SELECT 1 FROM public.textbooks WHERE textbook_id=$1 AND author_id=$2`,
-        [textbookId, req.user.user_id]
+        [textbookId, req.user.id]
       );
       if (r1.rowCount > 0) return next();
 
       const r2 = await pool.query(
         `SELECT role FROM public.enrollments WHERE user_id=$1 AND textbook_id=$2`,
-        [req.user.user_id, textbookId]
+        [req.user.id, textbookId]
       );
       if (r2.rowCount === 0) {
         return res.status(403).json({ message: "해당 교재에 등록되지 않았습니다." });
