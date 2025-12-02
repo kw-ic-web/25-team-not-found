@@ -2,12 +2,27 @@ import { useNavigate } from "react-router-dom";
 import ic_logo from "../../assets/icons/ic_logo.svg";
 import { Home, Book, Classroom, Quiz, Dashboard } from "../icons";
 import SidebarBtn from "./SidebarBtn";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Dialog from "@mui/material/Dialog";
+import api from "../../api/api";
+import SearchBookItem from "../student/main/SearchBookItem";
 
 const StudentSidebar = () => {
   const [activatedBtn, setActivatedBtn] = useState(0);
 
   const navigate = useNavigate();
+
+  const [enterClassOpen, setEnterClassOpen] = useState(false);
+  const [enrolledTextbooks, setEnrolledTextbooks] = useState(null);
+
+  useEffect(() => {
+    if (enterClassOpen) {
+      (async () => {
+        const { data } = await api.get("/textbooks/enrolled");
+        setEnrolledTextbooks(data);
+      })();
+    }
+  }, [enterClassOpen]);
 
   return (
     <aside className="w-[287px] h-screen bg-white border-r border-[#E2E8F0]">
@@ -37,11 +52,35 @@ const StudentSidebar = () => {
           isActivated={activatedBtn === 2}
           onClick={() => {
             setActivatedBtn(2);
-            navigate("/lecture?role=student");
+            setEnterClassOpen(true);
+            // navigate("/lecture?role=student");
           }}
         >
           수업참여
         </SidebarBtn>
+        <Dialog open={enterClassOpen} onClose={() => setEnterClassOpen(false)}>
+          {enrolledTextbooks &&
+            enrolledTextbooks.map((enrolledTextbook) => (
+              <div
+                key={enrolledTextbook.textbook_id}
+                className="cursor-pointer"
+                onClick={() => {
+                  navigate("/lecture?role=student", {
+                    state: {
+                      textbook_id: enrolledTextbook.textbook_id,
+                      title: enrolledTextbook.title,
+                    },
+                  });
+                }}
+              >
+                <SearchBookItem
+                  title={enrolledTextbook.title}
+                  subject={enrolledTextbook.subject || ""}
+                  term={enrolledTextbook.term || ""}
+                />
+              </div>
+            ))}
+        </Dialog>
         <SidebarBtn
           Icon={Quiz}
           isActivated={activatedBtn === 3}
