@@ -1,15 +1,78 @@
 import RoundedBlock from "../../components/RoundedBlock";
 import CourseItem from "../../components/student/quiz/CourseItem";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import QuizItem from "../../components/student/quiz/QuizItem";
 import ic_window_open from "../../assets/icons/student/main/quiz/ic_window_open.svg";
 import SelectItem from "../../components/student/quiz/SelectItem";
+import api from "../../api/api";
 
 const QuizSolve = () => {
   const [selectedCourse, setSelectedCourse] = useState(0);
   const [selectedQuiz, setSelectedQuiz] = useState(0);
   const [step, setStep] = useState(1);
   const STEP_LIMIT = 5;
+
+  /*
+    {
+    "success": true,
+    "data": [
+        {
+            "question_id": 1,
+            "question_type": "multiple_choice",
+            "question_content": "What is 2+2?",
+            "options": ["3", "4", "5"],
+            "question_order": 1
+        }
+      ]
+    }
+  */
+  const [quizList, setQuizList] = useState([
+    {
+      question_id: 1,
+      question_type: "multiple_choice",
+      question_content: "What is 2+2?",
+      options: ["3", "4", "5"],
+      question_order: 1,
+    },
+  ]);
+  const [selectQuizAnswer, setSelectQuizAnswer] = useState("");
+
+  // 추후 query 값으로 변경
+  const quizId = 1;
+
+  useEffect(() => {
+    try {
+      const fetchData = async () => {
+        const { data } = api.get(`/quizzes/${quizId}/questions`);
+        setQuizList(data.data);
+      };
+      fetchData();
+    } catch (error) {
+      console.log(error);
+    }
+  }, [quizId]);
+
+  const onClickQuizSubmit = async () => {
+    try {
+      const { data } = await api.post(`/quizzes/${quizId}/submit`, {
+        answers: [
+          {
+            question_id: quizId,
+            student_answer: selectQuizAnswer,
+          },
+        ],
+      });
+
+      if (data.data.results.is_correct) {
+        alert("정답입니다");
+      } else {
+        alert("틀렸습니다");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <main className="flex justify-center gap-[32px] pt-[32px] w-full min-h-screen bg-[#F6F7F8]">
       <RoundedBlock className="w-[348px] h-[602px]" title="내 강좌">
@@ -67,17 +130,26 @@ const QuizSolve = () => {
         <div className="h-[4px] rounded-[9999px] bg-[#F6F7F8]"></div>
 
         <h2 className="text-[18px] font-semibold text-[#0D1F29]">
-          다음 중 선형함수는 무엇인가요?
+          {quizList[0].question_content}
         </h2>
         <section className="flex flex-col gap-[16px] py-[8px]">
-          <SelectItem>f(x) = 2x + 3</SelectItem>
-          <SelectItem>f(x) = 2x + 3</SelectItem>
-          <SelectItem>f(x) = 2x + 3</SelectItem>
-          <SelectItem>f(x) = 2x + 3</SelectItem>
+          {quizList[0].options.map((item) => (
+            <SelectItem
+              isSelected={selectQuizAnswer === item}
+              onClick={() => {
+                setSelectQuizAnswer(item);
+              }}
+            >
+              {item}
+            </SelectItem>
+          ))}
         </section>
 
         <div className="flex justify-end w-full mt-[16px] mb-[8px]">
-          <button className="w-[112px] h-[40px] bg-[#13A4EC] rounded-[12px] text-[16px] text-white font-bold cursor-pointer">
+          <button
+            className="w-[112px] h-[40px] bg-[#13A4EC] rounded-[12px] text-[16px] text-white font-bold cursor-pointer"
+            onClick={onClickQuizSubmit}
+          >
             정답 제출
           </button>
         </div>
