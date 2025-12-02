@@ -326,4 +326,36 @@ router.delete(
   }
 );
 
+router.get("/enrolled", authMiddleware, async (req, res) => {
+  try {
+    const r = await pool.query(
+      `
+      SELECT DISTINCT
+        t.textbook_id,
+        t.title,
+        t.created_at,
+        (
+          SELECT MAX(v.version)
+          FROM public.textbook_versions v
+          WHERE v.textbook_id = t.textbook_id
+        ) AS latest_version,
+        t.author_id,
+        u.nickname AS author_nickname
+      FROM public.enrollments e
+      JOIN public.textbooks t ON e.textbook_id = t.textbook_id
+      LEFT JOIN public.users u ON u.user_id = t.author_id
+      WHERE e.user_id = $1
+        AND e.role = 'student'
+      ORDER BY t.created_at DESC
+      `,
+      [req.user.id]
+    );
+
+    return res.json(r.rows);
+  } catch (e) {
+    console.error("LIST ENROLLED TEXTBOOKS ERROR:", e);
+    return res.status(500).json({ message: "list enrolled failed" });
+  }
+});
+
 export default router;
