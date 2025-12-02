@@ -65,7 +65,7 @@ export default function TeacherStudent() {
           return;
         }
 
-        const url = `${API_BASE_URL}/textbooks/mine`;
+        const url = `${BASE_URL}/textbooks/mine`;
         const res = await fetch(url, {
           method: "GET",
           headers: {
@@ -120,7 +120,7 @@ export default function TeacherStudent() {
           return;
         }
 
-        const url = `${API_BASE_URL}/teacher/${selectedTextbookId}/students?version=${selectedVersion}`;
+        const url = `${BASE_URL}/teacher/${selectedTextbookId}/students?version=${selectedVersion}`;
 
         const res = await fetch(url, {
           method: "GET",

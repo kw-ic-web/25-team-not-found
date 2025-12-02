@@ -3,110 +3,11 @@ import { useNavigate } from "react-router-dom";
 import TeacherSidebar from "../components/sidebar/TeacherSidebar";
 import StartClassModal from "../components/teacher/StartClassModal";
 
-  const BASE_URL =
+const BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "https://team10-api.kwweb.org";
-
+  
 export default function TeacherMain() {
   const navigate = useNavigate();
-
-  // 더미 데이터 
-  const books = useMemo(
-    () => [
-      {
-        id: 1,
-        title: "영문법",
-        updatedAt: "2025-10-27",
-        img: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=800&auto=format&fit=crop",
-      },
-      {
-        id: 2,
-        title: "수학 함수",
-        updatedAt: "2025-10-26",
-        img: "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=800&auto=format&fit=crop",
-      },
-      {
-        id: 3,
-        title: "세계사 I",
-        updatedAt: "2025-10-20",
-        img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=800&auto=format&fit=crop",
-      },
-      {
-        id: 4,
-        title: "국어 독해",
-        updatedAt: "2025-10-10",
-        img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=800&auto=format&fit=crop",
-      },
-    ],
-    []
-  );
-
-  const quizzes = useMemo(
-    () => [
-      {
-        id: 1,
-        title: "세계사 퀴즈 #5",
-        과목: "세계사 I",
-        응시: 34,
-        평균: 81,
-        상태: "진행중",
-      },
-      {
-        id: 2,
-        title: "수학 퀴즈 #12",
-        과목: "수학 함수",
-        응시: 29,
-        평균: 74,
-        상태: "진행중",
-      },
-      {
-        id: 3,
-        title: "국어 퀴즈 #3",
-        과목: "국어 독해",
-        응시: 31,
-        평균: 88,
-        상태: "종료",
-      },
-    ],
-    []
-  );
-
-  const students = useMemo(
-    () => [
-      {
-        id: 1,
-        name: "김하늘",
-        email: "sky@school.kr",
-        recent: "세계사(어제)",
-        평균: 88,
-        상태: "활성",
-      },
-      {
-        id: 2,
-        name: "박서준",
-        email: "seojun@school.kr",
-        recent: "수학(오늘)",
-        평균: 74,
-        상태: "주의",
-      },
-      {
-        id: 3,
-        name: "최민지",
-        email: "minji@school.kr",
-        recent: "국어(3일 전)",
-        평균: 92,
-        상태: "우수",
-      },
-    ],
-    []
-  );
-
-  const [filters, setFilters] = useState({
-    bookSort: "최근 수정순",
-    quickBook: "영문법",
-    unit: "단원 1",
-    mode: "발표(교사 주도)",
-    studentQuery: "",
-  });
 
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
 
