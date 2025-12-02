@@ -13,22 +13,13 @@ router.get("/", authMiddleware, async (req, res) => {
         t.textbook_id,
         t.title,
         t.created_at,
-        t.updated_at,
-        t.author_id,
-        u.nickname AS author_nickname,
         (
           SELECT MAX(v.version)
           FROM public.textbook_versions v
           WHERE v.textbook_id = t.textbook_id
         ) AS latest_version,
-        COALESCE(
-          (
-            SELECT bool_or(v2.is_published)
-            FROM public.textbook_versions v2
-            WHERE v2.textbook_id = t.textbook_id
-          ),
-          false
-        ) AS has_published_version
+        t.author_id,
+        u.nickname AS author_nickname
       FROM public.textbooks t
       LEFT JOIN public.users u ON u.user_id = t.author_id
       ORDER BY t.created_at DESC
