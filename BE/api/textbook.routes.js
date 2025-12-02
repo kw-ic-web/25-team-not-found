@@ -5,6 +5,43 @@ import authMiddleware from '../middleware/auth.middleware.js';
 
 const router = Router();
 
+router.get("/", authMiddleware, async (req, res) => {
+  try {
+    const r = await pool.query(
+      `
+      SELECT
+        t.textbook_id,
+        t.title,
+        t.created_at,
+        t.updated_at,
+        t.author_id,
+        u.nickname AS author_nickname,
+        (
+          SELECT MAX(v.version)
+          FROM public.textbook_versions v
+          WHERE v.textbook_id = t.textbook_id
+        ) AS latest_version,
+        COALESCE(
+          (
+            SELECT bool_or(v2.is_published)
+            FROM public.textbook_versions v2
+            WHERE v2.textbook_id = t.textbook_id
+          ),
+          false
+        ) AS has_published_version
+      FROM public.textbooks t
+      LEFT JOIN public.users u ON u.user_id = t.author_id
+      ORDER BY t.created_at DESC
+      `
+    );
+
+    return res.json(r.rows);
+  } catch (e) {
+    console.error("LIST ALL TEXTBOOKS ERROR:", e);
+    return res.status(500).json({ message: "list textbooks failed" });
+  }
+});
+
 router.post("/", authMiddleware, async (req, res) => {
   const client = await pool.connect();
   try {
@@ -247,7 +284,6 @@ router.delete(
 
       await client.query("BEGIN");
 
-      // Verify version exists and get version_id
       const rV = await client.query(
         `SELECT version_id FROM public.textbook_versions WHERE textbook_id=$1 AND version=$2`,
         [textbookId, version]
