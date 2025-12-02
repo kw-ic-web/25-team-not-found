@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
 
-const SIGNALING_URL = import.meta.env.VITE_SIGNALING_URL;
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://team10-webrtc.kwweb.org";
 
 if (!SIGNALING_URL) {
   console.warn(

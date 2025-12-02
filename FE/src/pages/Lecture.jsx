@@ -78,8 +78,8 @@ function normalizePageContent(raw) {
 
 // 내 교재 목록
 async function fetchMyTextbooks() {
-  if (!BASE) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
-  const res = await fetch(`${BASE}/textbooks/mine`, {
+  if (!BASE_URL) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
+  const res = await fetch(`${BASE_URL}/textbooks/mine`, {
     method: "GET",
     headers: authHeaders(),
   });
@@ -89,9 +89,9 @@ async function fetchMyTextbooks() {
 
 // 특정 교재 버전의 페이지들
 async function fetchTextbookPages(textbookId, version) {
-  if (!BASE) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
+  if (!BASE_URL) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
   const res = await fetch(
-    `${BASE}/textbooks/${textbookId}/versions/${version}/pages`,
+    `${BASE_URL}/textbooks/${textbookId}/versions/${version}/pages`,
     {
       method: "GET",
       headers: authHeaders(),
@@ -103,8 +103,8 @@ async function fetchTextbookPages(textbookId, version) {
 
 // 선생님 수업 세션 생성
 async function createLectureSession(textbookId) {
-  if (!BASE) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
-  const res = await fetch(`${BASE}/lectures/session`, {
+  if (!BASE_URL) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
+  const res = await fetch(`${BASE_URL}/lectures/session`, {
     method: "POST",
     headers: authHeaders(true),
     body: JSON.stringify({ textbookId }),

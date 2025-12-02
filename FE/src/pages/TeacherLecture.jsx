@@ -29,7 +29,7 @@ export default function TeacherLecture() {
           return;
         }
 
-        const res = await fetch(`${API_BASE_URL}/textbooks/mine`, {
+        const res = await fetch(`${BASE_URL}/textbooks/mine`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
