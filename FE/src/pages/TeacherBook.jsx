@@ -267,6 +267,7 @@ export default function TeacherBook() {
           }}
           textbookId={textbookId}
           version={latestVersion}
+          pageNumber={pages.find((p) => p.id === currentId)?.pageNumber}
         />
       </Dialog>
 

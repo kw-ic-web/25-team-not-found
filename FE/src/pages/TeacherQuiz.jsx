@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ic_logo from "../assets/icons/ic_logo.svg";
 import api from "../api/api";
 
@@ -8,14 +8,15 @@ import api from "../api/api";
  * @param {Dispatch<SetStateAction<boolean>> | (() => void)} props.onClose - `TeacherBook.jsx`에서 Dialog으로 띄웠을 경우 onClose 동작, 일반 페이지로 띄웠을 경우 Do Nothing.
  * @param {number} props.textbookId - 교재 ID
  * @param {number} props.version - 교재 버전
+ * @param {number} props.pageNumber - 현재 페이지 번호
  * @returns
  */
-export default function TeacherQuiz({ onClose = () => {}, textbookId, version = 1 }) {
+export default function TeacherQuiz({ onClose = () => {}, textbookId, version = 1, pageNumber }) {
   const RESOLVED_TEXTBOOK_ID = textbookId ?? 1;
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [page, setPage] = useState("");
+  const [page, setPage] = useState(pageNumber ? String(pageNumber) : "");
   const [linkKey, setLinkKey] = useState("");
   const [questions, setQuestions] = useState([
     {
@@ -29,6 +30,13 @@ export default function TeacherQuiz({ onClose = () => {}, textbookId, version = 
   ]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+
+  // pageNumber prop이 변경되면 page state 업데이트
+  useEffect(() => {
+    if (pageNumber) {
+      setPage(String(pageNumber));
+    }
+  }, [pageNumber]);
 
   const currentQuestion = questions[currentQuestionIndex];
 
@@ -82,6 +90,10 @@ export default function TeacherQuiz({ onClose = () => {}, textbookId, version = 
   const validateForm = () => {
     if (!title.trim()) {
       alert("퀴즈 제목을 입력해주세요.");
+      return false;
+    }
+    if (!page.trim() && !pageNumber) {
+      alert("교재 페이지 번호를 입력해주세요.");
       return false;
     }
     if (questions.length === 0) {
@@ -142,10 +154,16 @@ export default function TeacherQuiz({ onClose = () => {}, textbookId, version = 
       };
     });
 
+    // pageNumber prop이 있으면 우선 사용, 없으면 page state 사용
+    const resolvedPageNumber = pageNumber || (page.trim() ? Number(page) : null);
+    if (!resolvedPageNumber) {
+      throw new Error("페이지 번호가 필요합니다.");
+    }
+
     return {
       textbook_id: RESOLVED_TEXTBOOK_ID,
       version: Number(version) || 1,
-      page_number: Number(page) || 1,
+      page_number: resolvedPageNumber,
       title: title.trim(),
       questions: payloadQuestions,
     };
@@ -159,9 +177,13 @@ export default function TeacherQuiz({ onClose = () => {}, textbookId, version = 
       const { data } = await api.post("/quiz-managements", payload);
       console.log("퀴즈 발행 완료:", data);
       alert("퀴즈가 발행(저장)되었습니다.");
+
+      onClose();
     } catch (err) {
       console.error("퀴즈 발행 실패:", err);
-      alert("퀴즈 발행에 실패했습니다.");
+      const errorMessage =
+        err.response?.data?.message || err.message || "퀴즈 발행에 실패했습니다.";
+      alert(errorMessage);
     } finally {
       setIsSaving(false);
     }
