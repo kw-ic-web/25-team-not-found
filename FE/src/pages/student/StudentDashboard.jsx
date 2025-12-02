@@ -12,8 +12,11 @@ import ColoredCalender from "../../components/student/dashboard/calender/Colored
 import CalenderBlock from "../../components/student/dashboard/calender/CalenderBlock";
 import UpcomingClassItem from "../../components/student/dashboard/UpcomingClassItem";
 import RecentQuizTable from "../../components/student/dashboard/RecentQuizTable";
+import { useNavigate } from "react-router-dom";
 
 const StudentDashboard = () => {
+  const navigate = useNavigate();
+
   // dummy list, 1-3 euclidean distribution 7 * 5, 31개
   const list = [];
   for (let i = 0; i < 7; i++) {
@@ -38,13 +41,14 @@ const StudentDashboard = () => {
         <div className="py-[12px] px-[24px] w-[1280px]">
           <div className="flex justify-between">
             <div className="flex gap-[12px] w-full">
-              <button className="flex justify-center items-center gap-[4px] w-[96px] h-[40px] rounded-[8px] bg-[#13A4EC] text-[14px] text-white cursor-pointer">
+              <button
+                className="flex justify-center items-center gap-[4px] w-[96px] h-[40px] rounded-[8px] bg-[#13A4EC] text-[14px] text-white cursor-pointer"
+                onClick={() => navigate(-1)}
+              >
                 <img src={ic_back} alt="" />
                 뒤로가기
               </button>
-              <h1 className="text-[24px] font-extrabold text-[#0F172A]">
-                내 학습 대시보드
-              </h1>
+              <h1 className="text-[24px] font-extrabold text-[#0F172A]">내 학습 대시보드</h1>
             </div>
             <button className="flex justify-center items-center gap-[8px] w-[102px] h-[42px] border border-[#E2E8F0] rounded-[8px] text-[14px] text-[#1F2937] cursor-pointer">
               <img src={ic_download_black} alt="" />
@@ -59,18 +63,10 @@ const StudentDashboard = () => {
               <img src={ic_down_arrow} alt="" />
             </button>
             <img src={ic_subject_icon} alt="" />
-            <button className="text-[16px] text-[#0F172A] cursor-pointer">
-              전체
-            </button>
-            <button className="text-[16px] text-[#0F172A] cursor-pointer">
-              수학
-            </button>
-            <button className="text-[16px] text-[#0F172A] cursor-pointer">
-              과학
-            </button>
-            <button className="text-[16px] text-[#0F172A] cursor-pointer">
-              국어
-            </button>
+            <button className="text-[16px] text-[#0F172A] cursor-pointer">전체</button>
+            <button className="text-[16px] text-[#0F172A] cursor-pointer">수학</button>
+            <button className="text-[16px] text-[#0F172A] cursor-pointer">과학</button>
+            <button className="text-[16px] text-[#0F172A] cursor-pointer">국어</button>
           </div>
 
           <p className="text-[12px] text-[#64748B]">
@@ -86,21 +82,15 @@ const StudentDashboard = () => {
           <DiffRoundedBlock title="평균 점수" value="84%" diff="-1.2%" />
           <RoundedBlock className="flex flex-col gap-[4px] py-[15px] px-[17px] size-[140px]">
             <div className="flex justify-between items-center">
-              <p className="text-[12px] font-semibold text-[#0F172A]">
-                연속 학습
-              </p>
+              <p className="text-[12px] font-semibold text-[#0F172A]">연속 학습</p>
               <img src={ic_continuous_study} alt="" />
             </div>
             <p className="text-[30px] font-extrabold text-[#0F172A]">4일</p>
           </RoundedBlock>
           <RoundedBlock className="p-[17px] w-[296px] h-[140px]">
             <div className="flex justify-between mb-[8px]">
-              <p className="text-[12px] font-semibold text-[#0F172A]">
-                주간 학습시간 목표
-              </p>
-              <button className="text-[12px] text-[#13A4EC] cursor-pointer">
-                수정
-              </button>
+              <p className="text-[12px] font-semibold text-[#0F172A]">주간 학습시간 목표</p>
+              <button className="text-[12px] text-[#13A4EC] cursor-pointer">수정</button>
             </div>
             <DummyProgressBar />
             <p className="mt-[8px] text-[12px] text-[#0F172A]">5 / 5 시간</p>
@@ -122,9 +112,7 @@ const StudentDashboard = () => {
             className="flex flex-col gap-[4px] p-[21px] w-[608px] h-[282px]"
             title="퀴즈 점수 분포"
           >
-            <p className="text-[12px] text-[#64748B]">
-              최근 기간 응시 퀴즈(구간화)
-            </p>
+            <p className="text-[12px] text-[#64748B]">최근 기간 응시 퀴즈(구간화)</p>
           </RoundedBlock>
         </div>
 
@@ -133,9 +121,7 @@ const StudentDashboard = () => {
             className="flex flex-col gap-[12px] p-[21px] w-[816px] h-[400px]"
             title="교재별 진도"
             rightElement={
-              <button className="text-[14px] text-[#13A4EC] cursor-pointer">
-                모두 펼치기
-              </button>
+              <button className="text-[14px] text-[#13A4EC] cursor-pointer">모두 펼치기</button>
             }
           >
             <ProgressOfBookItem title="수학 교재" progress="75%" />
@@ -189,9 +175,7 @@ const StudentDashboard = () => {
             className="flex flex-col gap-[12px] p-[21px] w-[608px] h-[276px]"
             title="최근 퀴즈"
             rightElement={
-              <button className="text-[14px] text-[#13A4EC] cursor-pointer">
-                퀴즈 보기
-              </button>
+              <button className="text-[14px] text-[#13A4EC] cursor-pointer">퀴즈 보기</button>
             }
           >
             <RecentQuizTable quizzes={recentQuizzes} />

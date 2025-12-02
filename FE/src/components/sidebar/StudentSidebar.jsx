@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import ic_logo from "../../assets/icons/ic_logo.svg";
 import { Home, Book, Classroom, Quiz, Dashboard } from "../icons";
 import SidebarBtn from "./SidebarBtn";
@@ -5,6 +6,8 @@ import { useState } from "react";
 
 const StudentSidebar = () => {
   const [activatedBtn, setActivatedBtn] = useState(0);
+
+  const navigate = useNavigate();
 
   return (
     <aside className="w-[287px] h-screen bg-white border-r border-[#E2E8F0]">
@@ -16,35 +19,46 @@ const StudentSidebar = () => {
         <SidebarBtn
           Icon={Home}
           isActivated={activatedBtn === 0}
-          onClick={() => setActivatedBtn(0)}
+          onClick={() => {
+            setActivatedBtn(0);
+            navigate("/student");
+          }}
         >
           학생 메인
         </SidebarBtn>
-        <SidebarBtn
-          Icon={Book}
-          isActivated={activatedBtn === 1}
-          onClick={() => setActivatedBtn(1)}
-        >
+        {/* <SidebarBtn Icon={Book} isActivated={activatedBtn === 1} onClick={() => {
+          setActivatedBtn(1);
+          navigate("/student/book");
+        }}>
           내 교재
-        </SidebarBtn>
+        </SidebarBtn> */}
         <SidebarBtn
           Icon={Classroom}
           isActivated={activatedBtn === 2}
-          onClick={() => setActivatedBtn(2)}
+          onClick={() => {
+            setActivatedBtn(2);
+            navigate("/lecture?role=student");
+          }}
         >
           수업참여
         </SidebarBtn>
         <SidebarBtn
           Icon={Quiz}
           isActivated={activatedBtn === 3}
-          onClick={() => setActivatedBtn(3)}
+          onClick={() => {
+            setActivatedBtn(3);
+            navigate("/student/quiz");
+          }}
         >
           퀴즈풀이
         </SidebarBtn>
         <SidebarBtn
           Icon={Dashboard}
           isActivated={activatedBtn === 4}
-          onClick={() => setActivatedBtn(4)}
+          onClick={() => {
+            setActivatedBtn(4);
+            navigate("/student/dashboard");
+          }}
         >
           학습 대시보드
         </SidebarBtn>
