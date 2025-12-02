@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../api/api";
 import TeacherSidebar from "../components/sidebar/TeacherSidebar";
 import StartClassModal from "../components/teacher/StartClassModal";
 
@@ -35,8 +36,8 @@ export default function TeacherMain() {
                 안녕하세요, <span className="text-[#13A4EC]">교사님</span> 👋
               </h1>
               <p className="text-sm sm:text-[15px] text-slate-600">
-  오늘은 {todayStr}입니다. 수업 준비를 시작해볼까요?
-</p>
+                오늘은 {todayStr}입니다. 수업 준비를 시작해볼까요?
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
@@ -45,12 +46,16 @@ export default function TeacherMain() {
               >
                 수업 시작
               </button>
-              <button className="h-10 sm:h-11 px-4 rounded-xl border border-slate-200 bg-white shadow-sm text-sm sm:text-[15px] font-semibold text-slate-900"
-              onClick={() => navigate("/teacher/book")}>
+              <button
+                className="h-10 sm:h-11 px-4 rounded-xl border border-slate-200 bg-white shadow-sm text-sm sm:text-[15px] font-semibold text-slate-900"
+                onClick={handleCreateBook}
+              >
                 새 교재
               </button>
-              <button className="h-10 sm:h-11 px-4 rounded-xl border border-slate-200 bg-white shadow-sm text-sm sm:text-[15px] font-semibold text-slate-900"
-               onClick={() => navigate("/teacher/quiz")}>
+              <button
+                className="h-10 sm:h-11 px-4 rounded-xl border border-slate-200 bg-white shadow-sm text-sm sm:text-[15px] font-semibold text-slate-900"
+                onClick={() => navigate("/teacher/quiz")}
+              >
                 새 퀴즈
               </button>
             </div>
@@ -67,9 +72,7 @@ export default function TeacherMain() {
                 />
                 <select
                   value={filters.bookSort}
-                  onChange={(e) =>
-                    setFilters((f) => ({ ...f, bookSort: e.target.value }))
-                  }
+                  onChange={(e) => setFilters((f) => ({ ...f, bookSort: e.target.value }))}
                   className="h-10 w-36 rounded-lg border border-slate-300 px-3 text-sm"
                 >
                   <option>최근 수정순</option>
@@ -88,11 +91,7 @@ export default function TeacherMain() {
                   {/* 썸네일 */}
                   <div className="aspect-[4/3] bg-slate-100">
                     {b.img ? (
-                      <img
-                        src={b.img}
-                        alt={b.title}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={b.img} alt={b.title} className="w-full h-full object-cover" />
                     ) : null}
                   </div>
                   {/* 본문 */}
@@ -102,166 +101,73 @@ export default function TeacherMain() {
                         {b.title}
                       </h3>
                     </div>
-                    <p className="mt-1 text-[12px] text-slate-500">
-                      마지막 수정: {b.updatedAt}
-                    </p>
+                    <p className="mt-1 text-[12px] text-slate-500">마지막 수정: {b.updatedAt}</p>
                     <div className="mt-3">
-                      <button className="w-full h-10 rounded-xl border border-slate-200 bg-white shadow-sm text-[14px] font-semibold text-slate-900">
+                      <button
+                        className="w-full h-10 rounded-xl border border-slate-200 bg-white shadow-sm text-[14px] font-semibold text-slate-900"
+                        onClick={() => handleCreateNewVersion(b.id, b.latestVersion)}
+                      >
                         편집
                       </button>
                     </div>
                   </div>
                 </article>
               ))}
-              {/* 교재 추가 */}
-              <article className="rounded-xl border border-dashed border-slate-300 bg-slate-50/60 shadow-inner min-h-[220px] flex items-center justify-center">
-                <button className="h-10 px-4 rounded-xl border border-slate-300 bg-white shadow-sm text-sm font-semibold"
-                onClick={() => navigate("/teacher/book")}>
-                  + 교재 추가
-                </button>
-              </article>
             </div>
+            {/* 교재 추가 */}
+            <article className="rounded-xl border border-dashed border-slate-300 bg-slate-50/60 shadow-inner min-h-[220px] flex items-center justify-center">
+              <button
+                className="h-10 px-4 rounded-xl border border-slate-300 bg-white shadow-sm text-sm font-semibold"
+                onClick={handleCreateBook}
+              >
+                + 교재 추가
+              </button>
+            </article>
           </section>
+        </div>
 
-          {/* 퀴즈 관리 / 수업 바로 시작 */}
-          <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* 퀴즈 관리 */}
-            <section className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-[16px] sm:text-[18px] font-bold text-slate-900">
-                  퀴즈 관리
-                </h2>
-                <button className="h-9 px-3 rounded-lg border border-slate-200 bg-white shadow-sm text-sm font-semibold"
-                onClick={() => navigate("/teacher/quiz")}>
-                  + 새 퀴즈
-                </button>
-              </div>
-
-              <div className="mt-3 overflow-x-auto">
-                <table className="min-w-[560px] w-full text-left">
-                  <thead className="text-[13px] text-slate-500">
-                    <tr>
-                      <th className="py-2 pr-3 font-bold">퀴즈</th>
-                      <th className="py-2 pr-3 font-bold">교재</th>
-                      <th className="py-2 pr-3 font-bold">상태</th>
-                      <th className="py-2 pr-3 font-bold">응시</th>
-                      <th className="py-2 pr-3 font-bold">평균</th>
-                      <th className="py-2 pr-3 font-bold">액션</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-[14px]">
-                    {quizzes.map((q) => (
-                      <tr key={q.id} className="border-t border-slate-100">
-                        <td className="py-2 pr-3 text-slate-900">{q.title}</td>
-                        <td className="py-2 pr-3 text-slate-900">{q.과목}</td>
-                        <td className="py-2 pr-3">
-                          <StatusPill status={q.상태} />
-                        </td>
-                        <td className="py-2 pr-3 text-slate-900">{q.응시}</td>
-                        <td className="py-2 pr-3 font-semibold text-slate-900">
-                          {q.평균}%
-                        </td>
-                        <td className="py-2 pr-3">
-                          <div className="flex items-center gap-2 text-[#13A4EC]">
-                            <button className="text-[14px]">결과</button>
-                            <span className="text-slate-300">|</span>
-                            <button className="text-[14px]">설정</button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            {/* 수업 바로 시작 */}
-            <section className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-[16px] sm:text-[18px] font-bold text-slate-900">
-                  수업 바로 시작
-                </h2>
-                <button className="h-9 px-3 rounded-lg bg-[#13A4EC] text-white shadow-sm text-sm font-semibold"
-                onClick={handleClickStartButton}
-                >
-                  시작
-                </button>
-              </div>
-
-              <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <LabeledSelect
-                  label="교재 선택"
-                  value={filters.quickBook}
-                  onChange={(v) =>
-                    setFilters((f) => ({ ...f, quickBook: v }))
-                  }
-                  options={["영문법", "수학 함수", "세계사 I", "국어 독해"]}
-                />
-                <LabeledSelect
-                  label="단원/페이지"
-                  value={filters.unit}
-                  onChange={(v) => setFilters((f) => ({ ...f, unit: v }))}
-                  options={["단원 1", "단원 2", "단원 3"]}
-                />
-                <LabeledSelect
-                  label="수업 모드"
-                  value={filters.mode}
-                  onChange={(v) => setFilters((f) => ({ ...f, mode: v }))}
-                  options={["발표(교사 주도)", "개별 풀이", "토론"]}
-                />
-              </div>
-            </section>
-          </div>
-
-          {/* 학생 관리 */}
-          <section className="mt-5 rounded-2xl bg-white border border-slate-200 shadow-sm p-4 sm:p-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-[16px] sm:text-[18px] font-bold text-slate-900">
-                학생 관리
-              </h2>
-              <div className="flex items-center gap-2">
-                <input
-                  value={filters.studentQuery}
-                  onChange={(e) =>
-                    setFilters((f) => ({
-                      ...f,
-                      studentQuery: e.target.value,
-                    }))
-                  }
-                  className="h-10 w-56 rounded-lg border border-slate-300 px-3 text-sm placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-blue-200"
-                  placeholder="이름/이메일 검색"
-                />
-                <button className="h-10 px-3 rounded-lg border border-slate-200 bg-white shadow-sm text-sm font-semibold"
-                onClick={() => navigate("/teacher/student")}>
-                  전체 보기
-                </button>
-              </div>
+        {/* 퀴즈 관리 / 수업 바로 시작 */}
+        <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* 퀴즈 관리 */}
+          <section className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[16px] sm:text-[18px] font-bold text-slate-900">퀴즈 관리</h2>
+              <button
+                className="h-9 px-3 rounded-lg border border-slate-200 bg-white shadow-sm text-sm font-semibold"
+                onClick={() => navigate("/teacher/quiz")}
+              >
+                + 새 퀴즈
+              </button>
             </div>
 
             <div className="mt-3 overflow-x-auto">
-              <table className="min-w-[720px] w-full text-left">
+              <table className="min-w-[560px] w-full text-left">
                 <thead className="text-[13px] text-slate-500">
                   <tr>
-                    <th className="py-2 pr-3 font-bold">학생</th>
-                    <th className="py-2 pr-3 font-bold">이메일</th>
-                    <th className="py-2 pr-3 font-bold">최근 수업</th>
-                    <th className="py-2 pr-3 font-bold">평균 점수</th>
+                    <th className="py-2 pr-3 font-bold">퀴즈</th>
+                    <th className="py-2 pr-3 font-bold">교재</th>
                     <th className="py-2 pr-3 font-bold">상태</th>
+                    <th className="py-2 pr-3 font-bold">응시</th>
+                    <th className="py-2 pr-3 font-bold">평균</th>
+                    <th className="py-2 pr-3 font-bold">액션</th>
                   </tr>
                 </thead>
                 <tbody className="text-[14px]">
-                  {students.map((s) => (
-                    <tr key={s.id} className="border-t border-slate-100">
-                      <td className="py-2 pr-3 text-slate-900">{s.name}</td>
-                      <td className="py-2 pr-3 text-slate-900">{s.email}</td>
-                      <td className="py-2 pr-3 text-slate-900">
-                        {s.recent}
-                      </td>
-                      <td className="py-2 pr-3 font-semibold text-slate-900">
-                        {s.평균}%
-                      </td>
+                  {quizzes.map((q) => (
+                    <tr key={q.id} className="border-t border-slate-100">
+                      <td className="py-2 pr-3 text-slate-900">{q.title}</td>
+                      <td className="py-2 pr-3 text-slate-900">{q.과목}</td>
                       <td className="py-2 pr-3">
-                        <StudentState state={s.상태} />
+                        <StatusPill status={q.상태} />
+                      </td>
+                      <td className="py-2 pr-3 text-slate-900">{q.응시}</td>
+                      <td className="py-2 pr-3 font-semibold text-slate-900">{q.평균}%</td>
+                      <td className="py-2 pr-3">
+                        <div className="flex items-center gap-2 text-[#13A4EC]">
+                          <button className="text-[14px]">결과</button>
+                          <span className="text-slate-300">|</span>
+                          <button className="text-[14px]">설정</button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -270,11 +176,98 @@ export default function TeacherMain() {
             </div>
           </section>
 
-          {/* 푸터 */}
-          <footer className="py-6 text-center text-[12px] text-slate-500">
-            © 2025 EduNote
-          </footer>
+          {/* 수업 바로 시작 */}
+          <section className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[16px] sm:text-[18px] font-bold text-slate-900">
+                수업 바로 시작
+              </h2>
+              <button
+                className="h-9 px-3 rounded-lg bg-[#13A4EC] text-white shadow-sm text-sm font-semibold"
+                onClick={handleClickStartButton}
+              >
+                시작
+              </button>
+            </div>
+
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <LabeledSelect
+                label="교재 선택"
+                value={filters.quickBook}
+                onChange={(v) => setFilters((f) => ({ ...f, quickBook: v }))}
+                options={["영문법", "수학 함수", "세계사 I", "국어 독해"]}
+              />
+              <LabeledSelect
+                label="단원/페이지"
+                value={filters.unit}
+                onChange={(v) => setFilters((f) => ({ ...f, unit: v }))}
+                options={["단원 1", "단원 2", "단원 3"]}
+              />
+              <LabeledSelect
+                label="수업 모드"
+                value={filters.mode}
+                onChange={(v) => setFilters((f) => ({ ...f, mode: v }))}
+                options={["발표(교사 주도)", "개별 풀이", "토론"]}
+              />
+            </div>
+          </section>
         </div>
+
+        {/* 학생 관리 */}
+        <section className="mt-5 rounded-2xl bg-white border border-slate-200 shadow-sm p-4 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-[16px] sm:text-[18px] font-bold text-slate-900">학생 관리</h2>
+            <div className="flex items-center gap-2">
+              <input
+                value={filters.studentQuery}
+                onChange={(e) =>
+                  setFilters((f) => ({
+                    ...f,
+                    studentQuery: e.target.value,
+                  }))
+                }
+                className="h-10 w-56 rounded-lg border border-slate-300 px-3 text-sm placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-blue-200"
+                placeholder="이름/이메일 검색"
+              />
+              <button
+                className="h-10 px-3 rounded-lg border border-slate-200 bg-white shadow-sm text-sm font-semibold"
+                onClick={() => navigate("/teacher/student")}
+              >
+                전체 보기
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-3 overflow-x-auto">
+            <table className="min-w-[720px] w-full text-left">
+              <thead className="text-[13px] text-slate-500">
+                <tr>
+                  <th className="py-2 pr-3 font-bold">학생</th>
+                  <th className="py-2 pr-3 font-bold">이메일</th>
+                  <th className="py-2 pr-3 font-bold">최근 수업</th>
+                  <th className="py-2 pr-3 font-bold">평균 점수</th>
+                  <th className="py-2 pr-3 font-bold">상태</th>
+                </tr>
+              </thead>
+              <tbody className="text-[14px]">
+                {students.map((s) => (
+                  <tr key={s.id} className="border-t border-slate-100">
+                    <td className="py-2 pr-3 text-slate-900">{s.name}</td>
+                    <td className="py-2 pr-3 text-slate-900">{s.email}</td>
+                    <td className="py-2 pr-3 text-slate-900">{s.recent}</td>
+                    <td className="py-2 pr-3 font-semibold text-slate-900">{s.평균}%</td>
+                    <td className="py-2 pr-3">
+                      <StudentState state={s.상태} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* 푸터 */}
+        <footer className="py-6 text-center text-[12px] text-slate-500">© 2025 EduNote</footer>
       </div>
 
       {/* 수업 시작 모달 */}
