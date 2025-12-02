@@ -4,14 +4,22 @@ import ContinueStudyItem from "../../components/student/main/ContinueStudyItem";
 import ic_plus from "../../assets/icons/student/main/ic_plus.svg";
 import SearchBookItem from "../../components/student/main/SearchBookItem";
 import QuizShortcutItem from "../../components/student/main/QuizShortcutItem";
-import {
-  ic_bell,
-  ic_check,
-  ic_feedback,
-} from "../../assets/icons/student/main/recent_notice";
+import { ic_bell, ic_check, ic_feedback } from "../../assets/icons/student/main/recent_notice";
 import MyProgressSummaryItem from "../../components/student/main/MyProgressSummaryItem";
+import { useEffect, useState } from "react";
+import api from "../../api/api";
 
 const StudentMain = () => {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await api.get("/dashboard");
+      setData(data);
+      console.log(data);
+    })();
+  }, []);
+
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth() + 1;
@@ -64,16 +72,8 @@ const StudentMain = () => {
               }
             >
               <div className="flex gap-[20px] mt-[20px]">
-                <SearchBookItem
-                  title="생물학 기초"
-                  subject="과학"
-                  term="1학기"
-                />
-                <SearchBookItem
-                  title="대수학 입문"
-                  subject="수학"
-                  term="1학기"
-                />
+                <SearchBookItem title="생물학 기초" subject="과학" term="1학기" />
+                <SearchBookItem title="대수학 입문" subject="수학" term="1학기" />
               </div>
             </RoundedBlock>
           </section>
@@ -121,22 +121,19 @@ const StudentMain = () => {
                 <div className="flex items-center gap-[12px]">
                   <img src={ic_bell} alt="" />
                   <p className="text-[14px] text-[#0F172A]">
-                    <span className="font-bold">생물학 기초</span> 과제 마감이
-                    2일 남았어요.
+                    <span className="font-bold">생물학 기초</span> 과제 마감이 2일 남았어요.
                   </p>
                 </div>
                 <div className="flex items-center gap-[12px]">
                   <img src={ic_feedback} alt="" />
                   <p className="text-[14px] text-[#0F172A]">
-                    <span className="font-bold">대수학 입문</span> 3주차 수업
-                    완료! 훌륭해요 👏
+                    <span className="font-bold">대수학 입문</span> 3주차 수업 완료! 훌륭해요 👏
                   </p>
                 </div>
                 <div className="flex items-center gap-[12px]">
                   <img src={ic_check} alt="" />
                   <p className="text-[14px] text-[#0F172A]">
-                    교사로부터 <span className="font-bold">피드백</span>이
-                    도착했어요.
+                    교사로부터 <span className="font-bold">피드백</span>이 도착했어요.
                   </p>
                 </div>
               </div>
@@ -158,10 +155,7 @@ const StudentMain = () => {
                   <MyProgressSummaryItem title="퀴즈 평균점" amount="82점" />
                 </div>
                 <div className="flex gap-[16px]">
-                  <MyProgressSummaryItem
-                    title="이번 주 학습 시간"
-                    amount="4.5h / 6h"
-                  />
+                  <MyProgressSummaryItem title="이번 주 학습 시간" amount="4.5h / 6h" />
                   <MyProgressSummaryItem title="과제 제출" amount="3 / 5" />
                 </div>
               </div>
