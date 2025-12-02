@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import { ko } from "@blocknote/core/locales";
@@ -28,6 +28,8 @@ export default function TeacherBook() {
   const [openCreateQuiz, setOpenCreateQuiz] = useState(false);
   // 초기 fetch
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  // 이전 currentId를 추적하기 위한 ref
+  const prevCurrentIdRef = useRef(null);
 
   // 페이지 목록 로드
   useEffect(() => {
@@ -110,6 +112,17 @@ export default function TeacherBook() {
 
   // 현재 섹션이 변경될 때 해당 섹션의 content를 에디터에 로드
   useEffect(() => {
+    // 페이지 전환 시 이전 페이지의 content를 상태에 저장
+    if (prevCurrentIdRef.current && prevCurrentIdRef.current !== currentId) {
+      const prevContent = editor.document;
+      setPages((prev) =>
+        prev.map((s) => (s.id === prevCurrentIdRef.current ? { ...s, content: prevContent } : s))
+      );
+    }
+
+    // 이전 currentId 업데이트
+    prevCurrentIdRef.current = currentId;
+
     if (!currentId) return;
     const currentSection = pages.find((s) => s.id === currentId);
     if (currentSection && currentSection.content) {
@@ -161,8 +174,11 @@ export default function TeacherBook() {
           continue;
         }
 
+        // 현재 페이지인 경우 에디터에서 최신 content 가져오기 (페이지 전환 시 저장되지 않은 변경사항 반영)
+        const pageContent = page.id === currentId ? editor.document : page.content;
+
         // content를 JSON 문자열로 변환 (백엔드가 JSONB로 저장)
-        const contentToSend = page.content ? JSON.stringify(page.content) : null;
+        const contentToSend = pageContent ? JSON.stringify(pageContent) : null;
 
         await api.put(`/textbooks/${textbookId}/versions/${latestVersion}/pages/${page.id}`, {
           content: contentToSend,
