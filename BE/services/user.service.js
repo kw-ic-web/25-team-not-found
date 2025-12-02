@@ -61,7 +61,7 @@ export const login = async (userData) => {
     process.env.JWT_SECRET,
     {
       expiresIn: process.env.JWT_EXPIRES_IN || '1h',
-      issuer: process.env.JWT_ISSUER,
+      issuer: process.env.JWT_ISSUER || 'default_issuer',
     }
   );
 

@@ -13,9 +13,13 @@ export const findEnrollmentsByUserId = async (userId) => {
         SELECT COUNT(*)::float / NULLIF((
           SELECT COUNT(*) 
           FROM textbook_pages tp 
-          JOIN textbook_versions tv ON tp.version_id = tv.version_id 
-          WHERE tv.textbook_id = t.textbook_id 
-          ORDER BY tv.version DESC LIMIT 1
+          WHERE tp.version_id = (
+            SELECT version_id 
+            FROM textbook_versions 
+            WHERE textbook_id = t.textbook_id 
+            ORDER BY version DESC 
+            LIMIT 1
+          )
         ), 0) * 100
         FROM page_reads pr
         JOIN textbook_pages tp ON pr.page_id = tp.page_id
