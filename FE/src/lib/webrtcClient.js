@@ -1,6 +1,3 @@
-// FE/src/lib/webrtcClient.js
-// WebRTC 시그널링 서버(socket.io) 클라이언트
-
 import { io } from "socket.io-client";
 
 const SIGNALING_URL = import.meta.env.VITE_SIGNALING_URL;

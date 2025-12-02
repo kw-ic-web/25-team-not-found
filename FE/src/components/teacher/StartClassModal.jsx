@@ -1,4 +1,3 @@
-// FE/src/components/teacher/StartClassModal.jsx
 import { useNavigate } from "react-router-dom";
 
 export default function StartClassModal({ open, onClose, onConfirm }) {
@@ -7,12 +6,10 @@ export default function StartClassModal({ open, onClose, onConfirm }) {
   if (!open) return null; // 열려있지 않으면 아무것도 렌더하지 않기
 
   const handleConfirm = () => {
-    // 부모에서 추가로 할 일이 있으면
     if (onConfirm) {
       onConfirm();
     }
-    // TeacherLecture.jsx가 연결된 경로로 이동
-    navigate("/teacher/lecture"); // 👉 라우터에서 정한 path에 맞게 수정 가능
+    navigate("/teacher/lecture"); 
   };
 
   return (

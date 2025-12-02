@@ -7,7 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function TeacherStudent() {
   const navigate = useNavigate();
 
-  // 로그인 유저 정보 (Login.jsx에서 localStorage.user에 저장)
+  // 로그인 유저 정보 
   const [user, setUser] = useState(null);
 
   // 학생 목록 / 교재 상태

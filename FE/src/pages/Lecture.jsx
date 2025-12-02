@@ -1,13 +1,11 @@
-// FE/src/pages/Lecture.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { getWebRTCSocket } from "../lib/webrtcClient";
+import ic_logo from "../assets/icons/ic_logo.svg";
 
 const BASE = import.meta.env.VITE_API_BASE_URL;
 
-// ───────────────────────
-// Auth helpers
-// ───────────────────────
+
 function getAccessToken() {
   try {
     return localStorage.getItem("access_token");
@@ -24,9 +22,58 @@ function authHeaders(includeJson = false) {
   };
 }
 
-// ───────────────────────
-// API helpers
-// ───────────────────────
+function extractTextFromNode(node) {
+  if (node == null) return "";
+
+  // 문자열
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node);
+  }
+
+  // 배열
+  if (Array.isArray(node)) {
+    return node.map(extractTextFromNode).join("");
+  }
+
+  // 객체
+  if (typeof node === "object") {
+    let result = "";
+
+    if (typeof node.text !== "undefined") {
+      result += extractTextFromNode(node.text);
+    }
+    if (typeof node.content !== "undefined") {
+      result += extractTextFromNode(node.content);
+    }
+    if (typeof node.children !== "undefined") {
+      result += extractTextFromNode(node.children);
+    }
+
+    return result;
+  }
+
+  return "";
+}
+
+function normalizePageContent(raw) {
+  if (raw == null) return "";
+  if (typeof raw === "string" || typeof raw === "number") {
+    return String(raw);
+  }
+
+  try {
+    const extracted = extractTextFromNode(raw);
+    if (extracted && extracted.trim().length > 0) {
+      return extracted;
+    }
+    // JSON 문자열
+    return JSON.stringify(raw);
+  } catch {
+    return "";
+  }
+}
+
+// API 
 
 // 내 교재 목록
 async function fetchMyTextbooks() {
@@ -53,7 +100,7 @@ async function fetchTextbookPages(textbookId, version) {
   return res.json(); // [{ page_id, page_number, content }, ...]
 }
 
-// (선생님 전용) 수업 세션 생성
+// 선생님 수업 세션 생성
 async function createLectureSession(textbookId) {
   if (!BASE) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
   const res = await fetch(`${BASE}/lectures/session`, {
@@ -65,7 +112,7 @@ async function createLectureSession(textbookId) {
   return res.json();
 }
 
-// WebRTC ICE 서버 (기본 STUN)
+// WebRTC ICE 서버 
 const ICE_CONFIG = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
@@ -83,7 +130,7 @@ function ToolbarButton({ label, onClick }) {
   );
 }
 
-/** 진행률 바 */
+/* 진행률 바 */
 function ProgressStrip({ value = 0 }) {
   const width = Math.max(0, Math.min(100, value));
   return (
@@ -96,7 +143,7 @@ function ProgressStrip({ value = 0 }) {
   );
 }
 
-/** 비디오 타일 */
+/* 비디오 타일 */
 function VideoTile({ label, videoRef, isLocal }) {
   return (
     <div className="bg-slate-800 rounded-lg relative w-full h-60 overflow-hidden">
@@ -114,7 +161,7 @@ function VideoTile({ label, videoRef, isLocal }) {
   );
 }
 
-/** 동그란 아이콘 버튼 */
+/* 동그란 아이콘 버튼 */
 function CircleIconButton({ variant = "neutral", label, onClick }) {
   const styles =
     variant === "danger"
@@ -137,9 +184,8 @@ function CircleIconButton({ variant = "neutral", label, onClick }) {
   );
 }
 
-// ───────────────────────
 // 메인 컴포넌트
-// ───────────────────────
+
 export default function Lecture() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -161,7 +207,7 @@ export default function Lecture() {
 
   // ───────── 교재 / 페이지 상태 ─────────
   const [textbooks, setTextbooks] = useState([]);
-  const [selectedTextbookId, setSelectedTextbookId] = useState(null); // 항상 string으로 다룸
+  const [selectedTextbookId, setSelectedTextbookId] = useState(null); // 항상 string
   const [selectedTextbookTitle, setSelectedTextbookTitle] = useState("");
   const [selectedVersion, setSelectedVersion] = useState(1);
   const [pages, setPages] = useState([]);
@@ -200,7 +246,6 @@ export default function Lecture() {
 
   // ───────────────────────
   // 교재 목록 / 선택 초기화
-  // ───────────────────────
   useEffect(() => {
     let cancelled = false;
 
@@ -267,7 +312,7 @@ export default function Lecture() {
 
   // ───────────────────────
   // 선택된 교재/버전에 따라 페이지 로딩
-  // ───────────────────────
+
   useEffect(() => {
     let cancelled = false;
 
@@ -334,15 +379,14 @@ export default function Lecture() {
         items: pages.map((p) => ({
           pageId: p.page_id ?? p.page_number ?? null,
           h3: `${p.page_number ?? ""} 페이지`,
-          text: p.content || "",
+          text: normalizePageContent(p.content),
         })),
       },
     ];
   }, [pages, selectedTextbookId, selectedVersion, selectedTextbookTitle]);
 
-  // ───────────────────────
+  // 
   // 로컬 미디어
-  // ───────────────────────
   async function ensureLocalStream() {
     if (localStreamRef.current) return localStreamRef.current;
 
@@ -405,9 +449,7 @@ export default function Lecture() {
     setCameraOn(next);
   }
 
-  // ───────────────────────
   // RTCPeerConnection 생성/해제
-  // ───────────────────────
   function createPeerConnection() {
     if (pcRef.current) return pcRef.current;
     const pc = new RTCPeerConnection(ICE_CONFIG);
@@ -450,8 +492,8 @@ export default function Lecture() {
   }
 
   // ───────────────────────
-  // roomId helpers
-  // ───────────────────────
+  // roomId 
+
   function buildRoomId(textbookId) {
     if (!textbookId) return "";
     return `video:textbook:${textbookId}`;
@@ -464,7 +506,7 @@ export default function Lecture() {
 
   // ───────────────────────
   // socket.io 이벤트 바인딩
-  // ───────────────────────
+
   useEffect(() => {
     if (!socket) return;
 
@@ -578,8 +620,8 @@ export default function Lecture() {
   }, [socket, role]);
 
   // ───────────────────────
-  // 자동 방 입장 (선생님 / 학생)
-  // ───────────────────────
+  // 자동 방 입장 
+
   async function joinRoomAsTeacher() {
     if (!selectedTextbookId) {
       setWebrtcError("교재가 선택되지 않았습니다.");
@@ -676,12 +718,11 @@ export default function Lecture() {
     return () => {
       leaveRoom();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ───────────────────────
   // Editing room 자동 join
-  // ───────────────────────
+  
   useEffect(() => {
     if (!socket) return;
     if (!selectedTextbookId) return;
@@ -720,9 +761,7 @@ export default function Lecture() {
     });
   }
 
-  // ───────────────────────
-  // UI 계산
-  // ───────────────────────
+  // ─────────────────────── UI
   const currentSection = sections[0];
   const currentItem =
     currentSection && currentSection.items[pageIndex]
@@ -731,21 +770,17 @@ export default function Lecture() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F6F7F8] to-white isolate">
-      {/* HEADER */}
+      {/* 헤더 */}
       <header className="sticky top-0 z-10 h-16 bg-white">
         <div className="max-w-[1536px] mx-auto h-full px-6 flex items-center justify-between">
           {/* 로고 + 학급/과목 + 진행률 */}
           <div className="flex items-center gap-4">
-            <div className="w-8 h-8 rounded bg-[#13A4EC] grid place-items-center text-white font-bold">
-              E
-            </div>
+            <img src={ic_logo} alt="EduNote" className="w-9 h-9 shrink-0" />
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 truncate">
+              EduNote · 퀴즈 제작
+            </h1>
             <div className="flex flex-col">
-              <strong className="text-slate-800 leading-none">EduNote</strong>
-              <span id="title">
-                {textbookLoading
-                  ? "교재를 불러오는 중..."
-                  : selectedTextbookTitle || "교재를 선택해 주세요."}
-              </span>
+             
             </div>
             <div className="pl-4">
               <ProgressStrip value={progress} />
@@ -797,7 +832,7 @@ export default function Lecture() {
 
         {/* 메인 + 사이드바 */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* LEFT: 교재 */}
+          {/* 교재 */}
           <section className="xl:col-span-2 bg-white rounded-lg shadow-sm relative">
             {/* 교재 선택 드롭다운 */}
             <div className="p-6 pb-0 flex items-center gap-2">
@@ -921,7 +956,7 @@ export default function Lecture() {
             </div>
           </section>
 
-          {/* RIGHT: 화상 통화 영역 */}
+          {/* 화상 통화 영역 */}
           <aside className="xl:col-span-1 space-y-4">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-bold text-slate-800 mb-1">

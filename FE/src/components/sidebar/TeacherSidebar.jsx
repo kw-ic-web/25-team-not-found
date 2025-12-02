@@ -12,8 +12,8 @@ const TeacherSidebar = () => {
     setIsClassStartOpen(true); // 강의 시작
   };
   const handleStartClass = () => {
-    setIsClassStartOpen(false);   // 모달 닫기
-    navigate("/teacher/lecture"); // 여기서 페이지 이동
+    setIsClassStartOpen(false);  
+    navigate("/teacher/lecture"); 
   };
   return (
     <aside className="w-[287px] shrink-0 bg-white border-r border-[#E2E8F0]">

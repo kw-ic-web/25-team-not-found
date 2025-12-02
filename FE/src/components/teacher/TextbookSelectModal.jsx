@@ -9,8 +9,8 @@ export default function TextbookSelectModal({
 }) {
   const navigate = useNavigate();
 
-  // 🔹 실제 교재 데이터가 상위 컴포넌트에서 내려오면 그걸 사용
-  //    없으면 더미 데이터 사용 (UI 확인용)
+  //  실제 교재 데이터가 상위 컴포넌트에서 내려오면 그걸 사용
+  //    없으면 더미 데이터 사용 
   const fallbackTextbooks = [
     {
       id: 1,
@@ -32,9 +32,7 @@ export default function TextbookSelectModal({
     },
   ];
 
-  // ✅ textbooks 배열은 두 형태를 모두 지원:
-  //  - API 결과: { textbook_id, title, ... }
-  //  - 더미/기존 형태: { id, title, ... }
+
   const textbooks =
     propTextbooks && propTextbooks.length > 0
       ? propTextbooks
@@ -71,26 +69,25 @@ export default function TextbookSelectModal({
     return list;
   }, [search, sort, textbooks]);
 
-  // ✅ 선택된 교재 찾기 (textbook_id 또는 id 모두 지원)
+  // 선택된 교재 찾기 
   const selectedBook =
     filtered.find(
       (b) =>
         String(b.textbook_id ?? b.id) === String(selectedId)
     ) || null;
 
-  // 🔹 여기서부터는 open 여부 체크
+  // open 여부 체크
   if (!open) return null;
 
   const handleConfirm = () => {
     if (!selectedBook) return;
 
-    // ✅ 백엔드/강의 페이지에서 쓸 진짜 textbookId
+    // textbookId
     const textbookId = selectedBook.textbook_id ?? selectedBook.id;
 
     // 상위/라우터로 넘겨줄 payload
     const payload = {
-      // Lecture.jsx에서 실제로 쓰는 필드
-      textbookId, // 핵심
+      textbookId, 
       textbookTitle: selectedBook.title, // Lecture.jsx에서 location.state.textbookTitle 로 읽음
 
       // 참고용/디버깅용 필드들
@@ -103,18 +100,14 @@ export default function TextbookSelectModal({
       role: "teacher",
       userName: "테스트용 선생님",
 
-      // ✅ 테스트용으로 잘 넘어가는지 확인할 수 있는 디버그 메시지
       debugMessage: `[TEST] TextbookSelectModal에서 navigate로 전달됨 / textbookId=${textbookId}`,
       debugAt: new Date().toISOString(),
     };
 
     console.log("[TextbookSelectModal] 선택 교재 payload:", payload);
 
-    // 상위 컴포넌트 콜백 호출 (필요 없으면 TeacherLecture에서 안 써도 됨)
     onConfirm?.(payload);
 
-    // 👉 Lecture.jsx 라우트로 이동하면서 선택한 textbookId도 같이 전달
-    //    Lecture.jsx에서는 useLocation().state.textbookId / textbookTitle 등으로 꺼내 쓰면 됨
     navigate("/lecture", { state: payload });
   };
 

@@ -1,4 +1,3 @@
-// FE/src/pages/TeacherMain.jsx
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TeacherSidebar from "../components/sidebar/TeacherSidebar";
@@ -7,7 +6,7 @@ import StartClassModal from "../components/teacher/StartClassModal";
 export default function TeacherMain() {
   const navigate = useNavigate();
 
-  // 더미 데이터 (백엔드 붙을 때 fetch로 교체)
+  // 더미 데이터 
   const books = useMemo(
     () => [
       {
@@ -118,12 +117,11 @@ export default function TeacherMain() {
   };
 
   return (
-    // ⬇⬇ 여기 전체를 사이드바 + 본문 구조로 감싼 거야
     <main className="flex min-h-dvh bg-[#F6F7F8]">
-      {/* 왼쪽: 사이드바 */}
+      {/* 사이드바 */}
       <TeacherSidebar />
 
-      {/* 오른쪽: 원래 쓰던 내용 전체 */}
+      {/* 오른쪽 */}
       <div className="flex-1">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           {/* 헤더 */}
