@@ -540,6 +540,26 @@
 
 ---
 
+# 교재 목록 조회
+
+### GET /textbooks
+
+- **설명**: 모든 교재 목록을 조회합니다.(최신 생성순)
+- **인증**: ✅ (Bearer)
+- **응답 (200)**
+    ```json
+    {
+        "textbook_id": "d4c1b8e2-5e91-4ee4-9dad-bcad58b74f59",
+        "title": "웹서비스설계",
+        "created_at": "2025-11-28T11:11:11.000Z",
+        "latest_version": 3,
+        "author_id": 3,
+        "author_nickname": "hyewon"
+    }
+    ```
+    
+---
+
 # Teacher (교사 기능)
 
 ### GET /teacher/:textbookId/students
