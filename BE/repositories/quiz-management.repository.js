@@ -1,4 +1,4 @@
-import pool from '../config/db.config.js';
+import pool from "../config/db.config.js";
 
 function toJsonb(v) {
   if (v === undefined || v === null) return null;
@@ -31,7 +31,8 @@ export const createQuiz = async (quizData, userId) => {
     await client.query("BEGIN");
 
     const pageQuery = await client.query(
-      `SELECT p.page_id
+      // 논리적 page_id 조회 - 주의: 이후 p.original_page_id는 alias로 page_id를 가짐
+      `SELECT p.original_page_id AS page_id
        FROM public.textbook_pages p
        JOIN public.textbook_versions v ON p.version_id=v.version_id
        WHERE v.textbook_id=$1 AND v.version=$2 AND p.page_number=$3`,
