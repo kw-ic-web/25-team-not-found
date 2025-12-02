@@ -2,7 +2,8 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ic_logo from "../assets/icons/ic_logo.svg";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://team10-api.kwweb.org";
 
 export default function TeacherStudent() {
   const navigate = useNavigate();

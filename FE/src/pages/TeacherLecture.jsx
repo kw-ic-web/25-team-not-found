@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import TextbookSelectModal from "../components/teacher/TextbookSelectModal";
 import ic_logo from "../assets/icons/ic_logo.svg";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://team10-api.kwweb.org";
 
 export default function TeacherLecture() {
   const navigate = useNavigate();

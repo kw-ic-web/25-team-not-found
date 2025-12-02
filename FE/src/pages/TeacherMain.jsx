@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import TeacherSidebar from "../components/sidebar/TeacherSidebar";
 import StartClassModal from "../components/teacher/StartClassModal";
 
+  const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://team10-api.kwweb.org";
+
 export default function TeacherMain() {
   const navigate = useNavigate();
 

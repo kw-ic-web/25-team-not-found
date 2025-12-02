@@ -4,8 +4,8 @@ import { useLocation, useSearchParams } from "react-router-dom";
 import { getWebRTCSocket } from "../lib/webrtcClient";
 import ic_logo from "../assets/icons/ic_logo.svg";
 
-const BASE = import.meta.env.VITE_API_BASE_URL;
-
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://team10-api.kwweb.org";
 
 function getAccessToken() {
   try {
