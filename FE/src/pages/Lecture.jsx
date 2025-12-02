@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { getWebRTCSocket } from "../lib/webrtcClient";
 import ic_logo from "../assets/icons/ic_logo.svg";
@@ -187,6 +188,8 @@ function CircleIconButton({ variant = "neutral", label, onClick }) {
 // 메인 컴포넌트
 
 export default function Lecture() {
+  const navigate = useNavigate();
+
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
@@ -777,7 +780,7 @@ export default function Lecture() {
           <div className="flex items-center gap-4">
             <img src={ic_logo} alt="EduNote" className="w-9 h-9 shrink-0" />
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 truncate">
-              EduNote · 퀴즈 제작
+              EduNote · 강의 시작
             </h1>
             <div className="flex flex-col">
              
@@ -789,6 +792,10 @@ export default function Lecture() {
 
           {/* 상태 */}
           <div className="flex items-center gap-3">
+          <button className="h-10 px-4 rounded-lg border border-slate-300 bg-white text-[14px] text-slate-900"
+          onClick={() => navigate("/teacher")}>
+              대시보드
+            </button>
             <div className="flex flex-col items-end text-xs text-slate-500">
               <span>역할: {role === "teacher" ? "선생님" : "학생"}</span>
               <span>사용자: {userName || "-"}</span>

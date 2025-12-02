@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import TextbookSelectModal from "../components/teacher/TextbookSelectModal";
 import ic_logo from "../assets/icons/ic_logo.svg";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function TeacherLecture() {
+  const navigate = useNavigate();
   const [isTextbookModalOpen, setIsTextbookModalOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
 
@@ -72,16 +74,17 @@ export default function TeacherLecture() {
 
             {/* 실시간 연결 준비 */}
             <div className="flex items-center gap-2 pl-4 border-l border-slate-200">
-              <div className="w-6 h-6 rounded-full bg-[#EF4444]" />
+              <div className="w-4 h-4 rounded-full bg-[#EF4444]" />
               <span className="text-[14px] font-medium text-slate-500">
                 실시간 연결 준비
               </span>
             </div>
           </div>
 
-          {/* 오른쪽: 대시보드 버튼 + 프로필 동그라미 */}
+          {/*  대시보드 버튼 + 프로필 동그라미 */}
           <div className="flex items-center gap-3">
-            <button className="h-10 px-4 rounded-lg border border-slate-300 bg-white text-[14px] text-slate-900">
+            <button className="h-10 px-4 rounded-lg border border-slate-300 bg-white text-[14px] text-slate-900"
+            onClick={() => navigate("/teacher")}>
               대시보드
             </button>
             <div className="w-10 h-10 rounded-full bg-slate-200" />
