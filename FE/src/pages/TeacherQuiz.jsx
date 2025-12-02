@@ -1,23 +1,171 @@
-// src/pages/TeacherQuiz.jsx
 import { useState } from "react";
 import ic_logo from "../assets/icons/ic_logo.svg";
+import api from "../api/api";
 
-export default function TeacherQuiz({ textbookId, version = 1 }) {
+/**
+ * 퀴즈 제작 페이지
+ * @param props
+ * @param {Dispatch<SetStateAction<boolean>> | (() => void)} props.onClose - `TeacherBook.jsx`에서 Dialog으로 띄웠을 경우 onClose 동작, 일반 페이지로 띄웠을 경우 Do Nothing.
+ * @param {number} props.textbookId - 교재 ID
+ * @param {number} props.version - 교재 버전
+ * @returns
+ */
+export default function TeacherQuiz({ onClose = () => {}, textbookId, version = 1 }) {
   const RESOLVED_TEXTBOOK_ID = textbookId ?? 1;
 
-  const [title, setTitle] = useState("3장 개념 확인");
-  const [desc, setDesc] = useState("세포 구조 핵심 개념 확인");
+  const [title, setTitle] = useState("");
+  const [desc, setDesc] = useState("");
   const [page, setPage] = useState("");
   const [linkKey, setLinkKey] = useState("");
-  const [question, setQuestion] = useState("");
-  const [options, setOptions] = useState(["", ""]);
-  const [difficulty, setDifficulty] = useState(5);
-  const [type, setType] = useState("객관식");
-  const [correctIndex, setCorrectIndex] = useState(0);
-  const [explanation, setExplanation] = useState("");
+  const [questions, setQuestions] = useState([
+    {
+      question: "",
+      options: ["", ""],
+      correctIndex: 0,
+      explanation: "",
+      type: "객관식",
+      difficulty: 5,
+    },
+  ]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
-  const addOption = () => setOptions((prev) => [...prev, ""]);
+  const currentQuestion = questions[currentQuestionIndex];
+
+  const updateCurrentQuestion = (updates) => {
+    setQuestions((prev) =>
+      prev.map((q, i) => (i === currentQuestionIndex ? { ...q, ...updates } : q))
+    );
+  };
+
+  const addOption = () => {
+    updateCurrentQuestion({
+      options: [...currentQuestion.options, ""],
+    });
+  };
+
+  const addNewQuestion = () => {
+    setQuestions((prev) => [
+      ...prev,
+      {
+        question: "",
+        options: ["", ""],
+        correctIndex: 0,
+        explanation: "",
+        type: "객관식",
+        difficulty: 5,
+      },
+    ]);
+    setCurrentQuestionIndex(questions.length);
+  };
+
+  const deleteQuestion = (index) => {
+    if (questions.length <= 1) {
+      alert("최소 1개의 문항이 필요합니다.");
+      return;
+    }
+    setQuestions((prev) => prev.filter((_, i) => i !== index));
+    if (currentQuestionIndex >= index && currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    } else if (currentQuestionIndex >= questions.length - 1) {
+      setCurrentQuestionIndex(questions.length - 2);
+    }
+  };
+
+  const mapQuestionType = (t) => {
+    if (t === "객관식") return "multiple_choice";
+    if (t === "주관식") return "subjective";
+    if (t === "OX") return "ox";
+    return "multiple_choice";
+  };
+
+  const validateForm = () => {
+    if (!title.trim()) {
+      alert("퀴즈 제목을 입력해주세요.");
+      return false;
+    }
+    if (questions.length === 0) {
+      alert("최소 1개 이상의 문항이 필요합니다.");
+      return false;
+    }
+
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      if (!q.question.trim()) {
+        alert(`문항 ${i + 1}의 질문을 입력해주세요.`);
+        return false;
+      }
+
+      const qt = mapQuestionType(q.type);
+      const cleanOptions = q.options.map((o) => o.trim()).filter((o) => o !== "");
+
+      if (qt === "multiple_choice") {
+        if (cleanOptions.length < 2) {
+          alert(`문항 ${i + 1}: 객관식 문항은 최소 2개 이상의 보기가 필요합니다.`);
+          return false;
+        }
+        if (q.correctIndex < 0 || q.correctIndex >= cleanOptions.length) {
+          alert(`문항 ${i + 1}: 정답으로 사용할 보기를 선택해주세요.`);
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
+  const buildPayload = () => {
+    const payloadQuestions = questions.map((q) => {
+      const questionType = mapQuestionType(q.type);
+      const cleanOptions = q.options.map((o) => o.trim()).filter((o) => o !== "");
+
+      let correctAnswer = "";
+      let payloadOptions = [];
+
+      if (questionType === "multiple_choice") {
+        payloadOptions = cleanOptions;
+        correctAnswer = cleanOptions[q.correctIndex] ?? "";
+      } else if (questionType === "ox") {
+        payloadOptions = ["O", "X"];
+        correctAnswer = "O"; // 추후 O/X
+      } else {
+        payloadOptions = [];
+        correctAnswer = "";
+      }
+
+      return {
+        question_type: questionType,
+        question_content: q.question.trim(),
+        options: payloadOptions,
+        correct_answer: correctAnswer,
+        explanation: q.explanation.trim(),
+      };
+    });
+
+    return {
+      textbook_id: RESOLVED_TEXTBOOK_ID,
+      version: Number(version) || 1,
+      page_number: Number(page) || 1,
+      title: title.trim(),
+      questions: payloadQuestions,
+    };
+  };
+
+  const handlePublish = async () => {
+    if (!validateForm()) return;
+    try {
+      setIsSaving(true);
+      const payload = buildPayload();
+      const { data } = await api.post("/quiz-managements", payload);
+      console.log("퀴즈 발행 완료:", data);
+      alert("퀴즈가 발행(저장)되었습니다.");
+    } catch (err) {
+      console.error("퀴즈 발행 실패:", err);
+      alert("퀴즈 발행에 실패했습니다.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const mapQuestionType = (t) => {
     if (t === "객관식") return "multiple_choice";
@@ -135,13 +283,14 @@ export default function TeacherQuiz({ textbookId, version = 1 }) {
             <button
               type="button"
               className="h-10 md:h-11 px-4 md:px-5 rounded-xl border border-gray-200 text-slate-900 text-sm md:text-base hover:bg-gray-50"
+              onClick={onClose}
             >
               교재로 돌아가기
             </button>
 
             <button
               type="button"
-              onClick={handleSaveDraft}
+              onClick={handlePublish}
               disabled={isSaving}
               className="h-10 md:h-11 px-5 md:px-6 rounded-xl bg-sky-500 text-white text-sm md:text-base font-semibold shadow-sm hover:bg-sky-600 active:bg-sky-700 disabled:opacity-60"
             >
@@ -174,8 +323,8 @@ export default function TeacherQuiz({ textbookId, version = 1 }) {
 
             <div className="max-h-56 overflow-auto">
               <p className="text-sm leading-6 text-slate-700">
-                선택된 텍스트가 없습니다. 교재에서 영역을 선택 후
-                &quot;퀴즈 만들기&quot;를 눌러보세요.
+                선택된 텍스트가 없습니다. 교재에서 영역을 선택 후 &quot;퀴즈 만들기&quot;를
+                눌러보세요.
               </p>
             </div>
 
@@ -226,137 +375,142 @@ export default function TeacherQuiz({ textbookId, version = 1 }) {
             <button
               type="button"
               className="relative h-[38px] w-[88px] rounded-xl bg-sky-500 text-white text-[14px] font-semibold"
-              onClick={() => {
-                setQuestion("");
-                setOptions(["", ""]);
-                setCorrectIndex(0);
-                setExplanation("");
-              }}
+              onClick={addNewQuestion}
             >
               새 문항
             </button>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-3">
-            <div className="flex items-start justify-between">
-              <h3 className="text-[18px] font-bold text-slate-900">문항 1</h3>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  className="h-9 w-9 rounded-full hover:bg-gray-100 grid place-items-center"
-                  title="복제"
-                  disabled
-                >
-                  <span className="block w-4 h-4 bg-slate-300 rounded-sm" />
-                </button>
-                <button
-                  type="button"
-                  className="h-9 w-9 rounded-full hover:bg-gray-100 grid place-items-center"
-                  title="삭제"
-                  disabled
-                >
-                  <span className="block w-4 h-4 bg-slate-300 rounded-full" />
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[14px] font-medium text-slate-900">
-                질문
-              </label>
-              <textarea
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                placeholder="질문을 입력하세요."
-                className="h-[90px] w-full resize-none rounded-xl border border-gray-600 px-3 py-2 text-[16px] placeholder-gray-500"
-              />
-            </div>
-
-            <div className="space-y-2 pt-1">
-              <label className="text-[14px] font-medium text-slate-900">
-                보기
-              </label>
-              <div className="space-y-2">
-                {options.map((opt, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      className="size-4 rounded-full border border-gray-600"
-                      checked={correctIndex === i}
-                      onChange={() => setCorrectIndex(i)}
-                    />
-                    <input
-                      value={opt}
-                      onChange={(e) =>
-                        setOptions((prev) =>
-                          prev.map((v, idx) =>
-                            idx === i ? e.target.value : v
-                          )
-                        )
-                      }
-                      placeholder={`보기 ${i + 1}`}
-                      className="h-[41px] flex-1 rounded-xl border border-gray-600 px-3 text-[16px] placeholder-gray-500"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={addOption}
-                className="flex items-center gap-1 text-sky-500 font-semibold text-[14px]"
+          {/* 문항 목록 */}
+          <div className="space-y-4">
+            {questions.map((q, index) => (
+              <div
+                key={index}
+                className={`bg-white border-2 rounded-2xl p-4 space-y-3 ${
+                  currentQuestionIndex === index ? "border-sky-500" : "border-gray-200"
+                }`}
+                onClick={() => setCurrentQuestionIndex(index)}
               >
-                <span className="block w-4 h-4 rounded-sm bg-sky-500" />
-                보기 추가
-              </button>
-            </div>
-
-            <div className="space-y-1 pt-2">
-              <label className="text-[14px] font-medium text-slate-900">
-                해설
-              </label>
-              <textarea
-                value={explanation}
-                onChange={(e) => setExplanation(e.target.value)}
-                placeholder="정답에 대한 해설을 입력하세요."
-                className="h-[70px] w-full resize-none rounded-xl border border-gray-600 px-3 py-2 text-[14px] placeholder-gray-500"
-              />
-            </div>
-
-            <div className="flex items-center justify-between pt-1">
-              <div className="flex items-center gap-2 h-[42px]">
-                <span className="text-[14px] font-medium text-slate-900">
-                  문항 유형
-                </span>
-                <div className="relative w-[120px] h-[42px]">
-                  <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    className="absolute inset-0 appearance-none rounded-xl border border-gray-600 pl-3 pr-8 text-[16px] text-slate-900 bg-white"
-                  >
-                    <option>객관식</option>
-                    <option>주관식</option>
-                    <option>OX</option>
-                  </select>
-                  <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 block w-6 h-6 border border-gray-600 rounded-sm" />
+                <div className="flex items-start justify-between">
+                  <span className="text-[18px] font-bold text-slate-900 hover:text-sky-500">
+                    문항 {index + 1}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      className="h-9 w-9 rounded-full hover:bg-gray-100 grid place-items-center"
+                      title="복제"
+                      disabled
+                    >
+                      <span className="block w-4 h-4 bg-slate-300 rounded-sm" />
+                    </button>
+                    <button
+                      type="button"
+                      className="h-9 w-9 rounded-full hover:bg-gray-100 grid place-items-center"
+                      title="삭제"
+                      onClick={() => deleteQuestion(index)}
+                    >
+                      <span className="block w-4 h-4 bg-slate-300 rounded-full" />
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2 h-5">
-                <span className="text-[14px] text-slate-500">난이도</span>
-                <input
-                  type="range"
-                  min={1}
-                  max={10}
-                  value={difficulty}
-                  onChange={(e) => setDifficulty(Number(e.target.value))}
-                  className="w-28"
-                />
-                <span className="w-6 text-center text-[14px] font-semibold text-slate-900">
-                  {difficulty}
-                </span>
+                {currentQuestionIndex === index && (
+                  <>
+                    <div className="space-y-1">
+                      <label className="text-[14px] font-medium text-slate-900">질문</label>
+                      <textarea
+                        value={q.question}
+                        onChange={(e) => updateCurrentQuestion({ question: e.target.value })}
+                        placeholder="질문을 입력하세요."
+                        className="h-[90px] w-full resize-none rounded-xl border border-gray-600 px-3 py-2 text-[16px] placeholder-gray-500"
+                      />
+                    </div>
+
+                    <div className="space-y-2 pt-1">
+                      <label className="text-[14px] font-medium text-slate-900">보기</label>
+                      <div className="space-y-2">
+                        {q.options.map((opt, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              className="size-4 rounded-full border border-gray-600"
+                              checked={q.correctIndex === i}
+                              onChange={() => updateCurrentQuestion({ correctIndex: i })}
+                            />
+                            <input
+                              value={opt}
+                              onChange={(e) =>
+                                updateCurrentQuestion({
+                                  options: q.options.map((v, idx) =>
+                                    idx === i ? e.target.value : v
+                                  ),
+                                })
+                              }
+                              placeholder={`보기 ${i + 1}`}
+                              className="h-[41px] flex-1 rounded-xl border border-gray-600 px-3 text-[16px] placeholder-gray-500"
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={addOption}
+                        className="flex items-center gap-1 text-sky-500 font-semibold text-[14px]"
+                      >
+                        <span className="block w-4 h-4 rounded-sm bg-sky-500" />
+                        보기 추가
+                      </button>
+                    </div>
+
+                    <div className="space-y-1 pt-2">
+                      <label className="text-[14px] font-medium text-slate-900">해설</label>
+                      <textarea
+                        value={q.explanation}
+                        onChange={(e) => updateCurrentQuestion({ explanation: e.target.value })}
+                        placeholder="정답에 대한 해설을 입력하세요."
+                        className="h-[70px] w-full resize-none rounded-xl border border-gray-600 px-3 py-2 text-[14px] placeholder-gray-500"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center gap-2 h-[42px]">
+                        <span className="text-[14px] font-medium text-slate-900">문항 유형</span>
+                        <div className="relative w-[120px] h-[42px]">
+                          <select
+                            value={q.type}
+                            onChange={(e) => updateCurrentQuestion({ type: e.target.value })}
+                            className="h-[42px] w-full rounded-xl border border-gray-600 px-3 text-[16px] text-slate-900"
+                          >
+                            <option>객관식</option>
+                            <option>주관식</option>
+                            <option>OX</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 h-5">
+                        <span className="text-[14px] text-slate-500">난이도</span>
+                        <input
+                          type="range"
+                          min={1}
+                          max={10}
+                          value={q.difficulty}
+                          onChange={(e) =>
+                            updateCurrentQuestion({ difficulty: Number(e.target.value) })
+                          }
+                          className="w-28"
+                        />
+                        <span className="w-6 text-center text-[14px] font-semibold text-slate-900">
+                          {q.difficulty}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
+            ))}
           </div>
         </section>
 
@@ -397,7 +551,7 @@ export default function TeacherQuiz({ textbookId, version = 1 }) {
               </button>
               <button
                 type="button"
-                onClick={handleSaveDraft}
+                onClick={handlePublish}
                 disabled={isSaving}
                 className="h-[42px] w-full rounded-xl border border-gray-200 text-[16px] font-semibold text-slate-900 disabled:opacity-60"
               >

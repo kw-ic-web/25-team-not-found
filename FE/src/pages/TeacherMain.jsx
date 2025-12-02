@@ -1,71 +1,40 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../api/api";
 import TeacherSidebar from "../components/sidebar/TeacherSidebar";
 import StartClassModal from "../components/teacher/StartClassModal";
 
-  const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://team10-api.kwweb.org";
+const BASE_URL =
+import.meta.env.VITE_API_BASE_URL || "https://team10-api.kwweb.org";
 
 export default function TeacherMain() {
-  const navigate = useNavigate();
-
-  // 더미 데이터 
-  const books = useMemo(
-    () => [
-      {
-        id: 1,
-        title: "영문법",
-        updatedAt: "2025-10-27",
-        img: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=800&auto=format&fit=crop",
-      },
-      {
-        id: 2,
-        title: "수학 함수",
-        updatedAt: "2025-10-26",
-        img: "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=800&auto=format&fit=crop",
-      },
-      {
-        id: 3,
-        title: "세계사 I",
-        updatedAt: "2025-10-20",
-        img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=800&auto=format&fit=crop",
-      },
-      {
-        id: 4,
-        title: "국어 독해",
-        updatedAt: "2025-10-10",
-        img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=800&auto=format&fit=crop",
-      },
-    ],
-    []
-  );
+  // 더미 데이터 (백엔드 붙을 때 fetch로 교체)
+  const [books, setBooks] = useState([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get("/textbooks/mine");
+        setBooks(
+          data.map((b) => ({
+            id: b.textbook_id,
+            title: b.title,
+            // API 수정 필요
+            updatedAt: b.created_at,
+            latestVersion: b.latest_version,
+            img: null,
+          }))
+        );
+      } catch {
+        console.error("ERROR: fetch books failed");
+      }
+    })();
+  }, []);
 
   const quizzes = useMemo(
     () => [
-      {
-        id: 1,
-        title: "세계사 퀴즈 #5",
-        과목: "세계사 I",
-        응시: 34,
-        평균: 81,
-        상태: "진행중",
-      },
-      {
-        id: 2,
-        title: "수학 퀴즈 #12",
-        과목: "수학 함수",
-        응시: 29,
-        평균: 74,
-        상태: "진행중",
-      },
-      {
-        id: 3,
-        title: "국어 퀴즈 #3",
-        과목: "국어 독해",
-        응시: 31,
-        평균: 88,
-        상태: "종료",
-      },
+      { id: 1, title: "세계사 퀴즈 #5", 과목: "세계사 I", 응시: 34, 평균: 81, 상태: "진행중" },
+      { id: 2, title: "수학 퀴즈 #12", 과목: "수학 함수", 응시: 29, 평균: 74, 상태: "진행중" },
+      { id: 3, title: "국어 퀴즈 #3", 과목: "국어 독해", 응시: 31, 평균: 88, 상태: "종료" },
     ],
     []
   );
@@ -108,6 +77,32 @@ export default function TeacherMain() {
     studentQuery: "",
   });
 
+  const handleCreateBook = async () => {
+    try {
+      const { data } = await api.post("/textbooks", {
+        title: "새 교재",
+      });
+      navigate("/teacher/book", {
+        state: { textbookId: data.textbookId, latestVersion: data.version.version },
+      });
+    } catch {
+      console.error("ERROR: create book failed");
+    }
+  };
+
+  const handleCreateNewVersion = async (textbookId, fromVersion) => {
+    try {
+      const { data } = await api.post(`/textbooks/${textbookId}/versions`, {
+        from_version: fromVersion,
+      });
+      navigate("/teacher/book", {
+        state: { textbookId, latestVersion: data.version },
+      });
+    } catch {
+      console.error("ERROR: create new version failed");
+    }
+  };
+  
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
 
   const handleClickStartButton = () => {
@@ -145,7 +140,7 @@ export default function TeacherMain() {
                 수업 시작
               </button>
               <button className="h-10 sm:h-11 px-4 rounded-xl border border-slate-200 bg-white shadow-sm text-sm sm:text-[15px] font-semibold text-slate-900"
-              onClick={() => navigate("/teacher/book")}>
+              onClick={handleCreateBook}
                 새 교재
               </button>
               <button className="h-10 sm:h-11 px-4 rounded-xl border border-slate-200 bg-white shadow-sm text-sm sm:text-[15px] font-semibold text-slate-900"
@@ -178,44 +173,40 @@ export default function TeacherMain() {
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {books.map((b) => (
-                <article
-                  key={b.id}
-                  className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden"
-                >
-                  {/* 썸네일 */}
-                  <div className="aspect-[4/3] bg-slate-100">
-                    {b.img ? (
-                      <img
-                        src={b.img}
-                        alt={b.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : null}
+          <div className="mt-4 grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {books.map((b) => (
+              <article
+                key={b.id}
+                className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden"
+              >
+                {/* 썸네일 */}
+                <div className="aspect-[4/3] bg-slate-100">
+                  {b.img ? (
+                    <img src={b.img} alt={b.title} className="w-full h-full object-cover" />
+                  ) : null}
+                </div>
+                {/* 본문 */}
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold text-[16px] text-slate-900 line-clamp-1">
+                      {b.title}
+                    </h3>
                   </div>
-                  {/* 본문 */}
-                  <div className="p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold text-[16px] text-slate-900 line-clamp-1">
-                        {b.title}
-                      </h3>
-                    </div>
-                    <p className="mt-1 text-[12px] text-slate-500">
-                      마지막 수정: {b.updatedAt}
-                    </p>
-                    <div className="mt-3">
-                      <button className="w-full h-10 rounded-xl border border-slate-200 bg-white shadow-sm text-[14px] font-semibold text-slate-900">
-                        편집
-                      </button>
-                    </div>
+                  <p className="mt-1 text-[12px] text-slate-500">마지막 수정: {b.updatedAt}</p>
+                  <div className="mt-3">
+                    <button
+                      className="w-full h-10 rounded-xl border border-slate-200 bg-white shadow-sm text-[14px] font-semibold text-slate-900"
+                      onClick={() => handleCreateNewVersion(b.id, b.latestVersion)}
+                    >
+                      편집
+                    </button>
                   </div>
                 </article>
               ))}
               {/* 교재 추가 */}
               <article className="rounded-xl border border-dashed border-slate-300 bg-slate-50/60 shadow-inner min-h-[220px] flex items-center justify-center">
                 <button className="h-10 px-4 rounded-xl border border-slate-300 bg-white shadow-sm text-sm font-semibold"
-                onClick={() => navigate("/teacher/book")}>
+                onClick={handleCreateBook}
                   + 교재 추가
                 </button>
               </article>
