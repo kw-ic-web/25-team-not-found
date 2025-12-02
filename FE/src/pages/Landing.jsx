@@ -4,8 +4,10 @@ import ic_book from "../assets/icons/landing/ic_book.svg";
 import ic_people from "../assets/icons/landing/ic_people.svg";
 import ic_pen from "../assets/icons/landing/ic_pen.svg";
 import ReviewItem from "../components/Landing/ReviewItem";
+import { useNavigate } from "react-router-dom";
 
 const Landing = () => {
+  const navigate = useNavigate();
   return (
     <main className="bg-[#F6F7F8]">
       <section
@@ -26,7 +28,10 @@ const Landing = () => {
             "맞춤형 학습을 위한 교사와 학생의 협업 플랫폼"
           </p>
           <div className="flex justify-center w-full">
-            <button className="mt-[16px] w-[123px] h-[48px] bg-[#13A4EC] rounded-[8px] text-[16px] font-bold text-white cursor-pointer">
+            <button
+              className="mt-[16px] w-[123px] h-[48px] bg-[#13A4EC] rounded-[8px] text-[16px] font-bold text-white cursor-pointer"
+              onClick={() => navigate("/login")}
+            >
               시작하기
             </button>
           </div>
@@ -53,19 +58,12 @@ const Landing = () => {
           <CoreFeatureItem
             src={ic_people}
             title="1:1 학습 환경"
-            content={
-              <>
-                교사와 학생이 밀접하게 상호작용하는 전용 1:1 학습 공간을
-                제공합니다.
-              </>
-            }
+            content={<>교사와 학생이 밀접하게 상호작용하는 전용 1:1 학습 공간을 제공합니다.</>}
           />
           <CoreFeatureItem
             src={ic_pen}
             title="실시간 피드백"
-            content={
-              <>즉각적인 피드백으로 이해도를 높이고 학습 결과를 개선합니다.</>
-            }
+            content={<>즉각적인 피드백으로 이해도를 높이고 학습 결과를 개선합니다.</>}
           />
         </section>
       </section>
@@ -121,15 +119,9 @@ const Landing = () => {
 
       <section className="flex justify-between items-center px-[11.666666666666666666666666666667%] w-full h-[85px]">
         <div className="flex gap-[24px]">
-          <button className="text-[14px] text-[#6B7280] cursor-pointer">
-            이용약관
-          </button>
-          <button className="text-[14px] text-[#6B7280] cursor-pointer">
-            개인정보처리방침
-          </button>
-          <button className="text-[14px] text-[#6B7280] cursor-pointer">
-            문의하기
-          </button>
+          <button className="text-[14px] text-[#6B7280] cursor-pointer">이용약관</button>
+          <button className="text-[14px] text-[#6B7280] cursor-pointer">개인정보처리방침</button>
+          <button className="text-[14px] text-[#6B7280] cursor-pointer">문의하기</button>
         </div>
         <p className="text-[14px] text-[#6B7280]">
           © {new Date().getFullYear()} EduNote. All rights reserved.
