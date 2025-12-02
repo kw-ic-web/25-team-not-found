@@ -67,7 +67,7 @@ const StudentSidebar = () => {
                 onClick={() => {
                   navigate("/lecture?role=student", {
                     state: {
-                      textbook_id: enrolledTextbook.textbook_id,
+                      textbookId: enrolledTextbook.textbook_id,
                       title: enrolledTextbook.title,
                     },
                   });
