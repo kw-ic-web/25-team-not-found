@@ -315,6 +315,7 @@ export default function TeacherBook() {
               <div className="px-6 py-6 min-h-[448px]">
                 <BlockNoteView
                   editor={editor}
+                  theme="light"
                   editable={!preview}
                   onChange={() => {
                     // JSON 객체로 직접 저장
