@@ -658,13 +658,15 @@
 
 ### GET /textbooks/:textbookId/versions/:version/pages
 
-- **설명**: 특정 교재 버전의 페이지 목록을 조회합니다.
+
+- **설명**: 특정 교재 버전의 페이지 목록을 조회합니다. `page_id`는 버전 간에 유지되는 논리적 ID입니다. 물리적 레코드 ID는 `record_id`로 제공됩니다.
 - **인증**: ✅ (Bearer)
 - **응답 (200)**
     ```json
     [
         {
-            "page_id": 1,
+            "page_id": "uuid (logical)",
+            "record_id": "uuid (physical)",
             "page_number": 1,
             "content": "..."
         }
@@ -693,7 +695,7 @@
 
 ### PUT /textbooks/:textbookId/versions/:version/pages/:pageId
 
-- **설명**: 교재 페이지의 내용을 수정합니다.
+- **설명**: 교재 페이지의 내용을 수정합니다. `pageId`는 논리적 ID입니다.
 - **인증**: ✅ (Bearer, Enrolled users)
 - **요청 본문 (Request Body)**:
     ```json
@@ -710,11 +712,14 @@
     }
     ```
 
-### DELETE /textbooks/pages/:pageId
+### DELETE /textbooks/:textbookId/versions/:version/pages/:pageId
 
-- **설명**: 교재 페이지 삭제(해당 페이지에 연결된 퀴즈도 함께 삭제됩니다)
+- **설명**: 특정 버전의 페이지를 삭제합니다. `pageId`는 논리적 ID입니다. (해당 페이지에 연결된 퀴즈도 함께 삭제됩니다)
 - **인증**: ✅ (Bearer)
-- **요청 경로 파라미터**: pageId: 삭제할 페이지의 UUID
+- **요청 경로 파라미터**:
+    - `textbookId`: 교재 UUID
+    - `version`: 버전 번호
+    - `pageId`: 삭제할 페이지의 논리적 UUID
 - **요청 본문 (Request Body)**: 없음
 - **응답 (200)**
   ```json
