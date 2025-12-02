@@ -26,7 +26,7 @@ function authHeaders(includeJson = false) {
 function extractTextFromNode(node) {
   if (node == null) return "";
 
-  // 문자열
+  // 문자열/숫자
   if (typeof node === "string" || typeof node === "number") {
     return String(node);
   }
@@ -40,14 +40,20 @@ function extractTextFromNode(node) {
   if (typeof node === "object") {
     let result = "";
 
-    if (typeof node.text !== "undefined") {
-      result += extractTextFromNode(node.text);
+    // 1) 에디터 블록에서 props 안에 텍스트가 들어있는 경우
+    if (node.props) {
+      result += extractTextFromNode(node.props);
     }
-    if (typeof node.content !== "undefined") {
+
+    // 2) 블록 최상단에 content / children / text 가 직접 있는 경우
+    if ("content" in node) {
       result += extractTextFromNode(node.content);
     }
-    if (typeof node.children !== "undefined") {
+    if ("children" in node) {
       result += extractTextFromNode(node.children);
+    }
+    if ("text" in node) {
+      result += extractTextFromNode(node.text);
     }
 
     return result;
@@ -56,24 +62,42 @@ function extractTextFromNode(node) {
   return "";
 }
 
+
 function normalizePageContent(raw) {
   if (raw == null) return "";
-  if (typeof raw === "string" || typeof raw === "number") {
-    return String(raw);
-  }
 
   try {
-    const extracted = extractTextFromNode(raw);
-    if (extracted && extracted.trim().length > 0) {
-      return extracted;
+    let parsed = raw;
+
+    // content가 JSON 문자열이면 파싱 먼저 시도
+    if (typeof raw === "string") {
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        parsed = raw; // 그냥 문자열이면 그대로 둠
+      }
     }
-    // JSON 문자열
-    return JSON.stringify(raw);
+
+    const text = extractTextFromNode(parsed);
+
+    if (text && text.trim().length > 0) {
+      return text;
+    }
+
+    // 그래도 없으면 문자열/숫자는 그대로 반환
+    if (typeof raw === "string" || typeof raw === "number") {
+      return String(raw);
+    }
+
+    // 객체인데 텍스트가 전혀 없으면 그냥 빈 문자열
+    return "";
   } catch {
+    if (typeof raw === "string" || typeof raw === "number") {
+      return String(raw);
+    }
     return "";
   }
 }
-
 // API 
 
 // 내 교재 목록
@@ -311,7 +335,7 @@ export default function Lecture() {
     return () => {
       cancelled = true;
     };
-  }, [location.state]);
+  }, [location.key, location.state]);
 
   // ───────────────────────
   // 선택된 교재/버전에 따라 페이지 로딩

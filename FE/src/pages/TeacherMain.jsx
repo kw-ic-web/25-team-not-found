@@ -214,7 +214,7 @@ export default function TeacherMain() {
               <article className="rounded-xl border border-dashed border-slate-300 bg-slate-50/60 shadow-inner min-h-[220px] flex items-center justify-center">
                 <button
                   className="h-10 px-4 rounded-xl border border-slate-300 bg-white shadow-sm text-sm font-semibold"
-                  onClick={() => navigate("/teacher/book")}
+                  onClick={handleCreateBook}
                 >
                   + 교재 추가
                 </button>
