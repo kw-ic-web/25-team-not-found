@@ -40,12 +40,17 @@ function extractTextFromNode(node) {
   if (typeof node === "object") {
     let result = "";
 
-    // 1) 에디터 블록에서 props 안에 텍스트가 들어있는 경우
+    // 1) props 안에 텍스트가 들어 있는 경우
     if (node.props) {
       result += extractTextFromNode(node.props);
     }
 
-    // 2) 블록 최상단에 content / children / text 가 직접 있는 경우
+    // 2) 에디터가 페이지 내용을 blocks 배열 안에 넣는 경우
+    if ("blocks" in node) {
+      result += extractTextFromNode(node.blocks);
+    }
+
+    // 3) 바로 content / children / text가 있는 경우
     if ("content" in node) {
       result += extractTextFromNode(node.content);
     }
@@ -61,6 +66,7 @@ function extractTextFromNode(node) {
 
   return "";
 }
+
 
 
 function normalizePageContent(raw) {
