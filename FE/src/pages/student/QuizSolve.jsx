@@ -7,57 +7,135 @@ import SelectItem from "../../components/student/quiz/SelectItem";
 import api from "../../api/api";
 
 const QuizSolve = () => {
-  const [selectedCourse, setSelectedCourse] = useState(0);
-  const [selectedQuiz, setSelectedQuiz] = useState(0);
-  const [step, setStep] = useState(1);
-  const STEP_LIMIT = 5;
-
-  /*
-    {
-    "success": true,
-    "data": [
-        {
-            "question_id": 1,
-            "question_type": "multiple_choice",
-            "question_content": "What is 2+2?",
-            "options": ["3", "4", "5"],
-            "question_order": 1
-        }
-      ]
-    }
-  */
-  const [quizList, setQuizList] = useState([
-    {
-      question_id: 1,
-      question_type: "multiple_choice",
-      question_content: "What is 2+2?",
-      options: ["3", "4", "5"],
-      question_order: 1,
-    },
-  ]);
-  const [selectQuizAnswer, setSelectQuizAnswer] = useState("");
-
-  // 추후 query 값으로 변경
-  const quizId = 1;
+  const [textbooks, setTextbooks] = useState(null);
 
   useEffect(() => {
     try {
       const fetchData = async () => {
-        const { data } = api.get(`/quizzes/${quizId}/questions`);
-        setQuizList(data.data);
+        const { data } = await api.get("/textbooks");
+        setTextbooks(data);
+        if (data) {
+          setSelectedCourse(data[0]);
+        }
       };
       fetchData();
     } catch (error) {
       console.log(error);
     }
-  }, [quizId]);
+  }, []);
+
+  const [selectedCourse, setSelectedCourse] = useState(null);
+
+  // selectedCourse의 page_id 가져오고, 기반으로 퀴즈 가져오기, for문 순회
+  useEffect(() => {
+    if (!selectedCourse) return;
+
+    setGroupedQuizzes({}); // 초기화
+    setSelectedQuizId(null); // 선택된 퀴즈 초기화
+    setStep(1); // step 초기화
+
+    (async () => {
+      try {
+        const { data } = await api.get(
+          `/textbooks/${selectedCourse.textbook_id}/versions/${selectedCourse.latest_version}/pages`
+        );
+        const allQuizzes = [];
+        for (const page of data) {
+          try {
+            const { data: quizData } = await api.get(`/quiz-managements/${page.page_id}`);
+            if (quizData && Array.isArray(quizData)) {
+              allQuizzes.push(...quizData);
+            }
+          } catch (error) {
+            console.log(`페이지 ${page.page_id}의 퀴즈를 가져오는 중 오류:`, error);
+          }
+        }
+        // 중복된 question_id를 가진 퀴즈 제거
+        const uniqueQuizzes = allQuizzes.filter(
+          (quiz, index, self) => index === self.findIndex((q) => q.question_id === quiz.question_id)
+        );
+
+        // quiz_id로 그룹화
+        const grouped = {};
+        uniqueQuizzes.forEach((quiz) => {
+          if (!grouped[quiz.quiz_id]) {
+            grouped[quiz.quiz_id] = {
+              quiz_id: quiz.quiz_id,
+              title: quiz.title,
+              created_at: quiz.created_at,
+              questions: [],
+            };
+          }
+          // question_order로 정렬하여 추가
+          grouped[quiz.quiz_id].questions.push({
+            question_id: quiz.question_id,
+            question_type: quiz.question_type,
+            question_content: quiz.question_content,
+            options: quiz.options,
+            correct_answer: quiz.correct_answer,
+            explanation: quiz.explanation,
+            question_order: quiz.question_order,
+          });
+        });
+
+        // 각 퀴즈의 문제들을 question_order로 정렬
+        Object.keys(grouped).forEach((quizId) => {
+          grouped[quizId].questions.sort((a, b) => a.question_order - b.question_order);
+        });
+
+        setGroupedQuizzes(grouped);
+
+        // 첫 번째 퀴즈를 자동 선택
+        const firstQuizId = Object.keys(grouped)[0];
+        if (firstQuizId) {
+          setSelectedQuizId(firstQuizId);
+        }
+      } catch (error) {
+        console.log("퀴즈 목록을 가져오는 중 오류:", error);
+      }
+    })();
+  }, [selectedCourse]);
+
+  const [selectedQuizId, setSelectedQuizId] = useState(null);
+  const [step, setStep] = useState(1);
+  const [groupedQuizzes, setGroupedQuizzes] = useState({}); // quiz_id를 key로 하는 객체
+  const [selectQuizAnswer, setSelectQuizAnswer] = useState("");
+
+  // 퀴즈 선택 시 step 초기화
+  useEffect(() => {
+    if (selectedQuizId) {
+      setStep(1);
+      setSelectQuizAnswer("");
+    }
+  }, [selectedQuizId]);
+
+  // 이 useEffect는 사용하지 않음 (selectedCourse 기반으로 퀴즈를 가져오므로)
+  // useEffect(() => {
+  //   try {
+  //     const fetchData = async () => {
+  //       const { data } = await api.get(`/quizzes/${quizId}/questions`);
+  //       setQuizList(data.data);
+  //     };
+  //     fetchData();
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }, [quizId]);
 
   const onClickQuizSubmit = async () => {
+    if (!selectedQuizId || !groupedQuizzes[selectedQuizId]) return;
+
+    const currentQuestion = groupedQuizzes[selectedQuizId].questions[step - 1];
+    if (!currentQuestion || !selectQuizAnswer) {
+      alert("답을 선택해주세요");
+      return;
+    }
+
     try {
-      const { data } = await api.post(`/quizzes/${quizId}/submit`, {
+      const { data } = await api.post(`/quizzes/${selectedQuizId}/submit`, {
         answers: [
           {
-            question_id: quizId,
+            question_id: currentQuestion.question_id,
             student_answer: selectQuizAnswer,
           },
         ],
@@ -77,112 +155,124 @@ const QuizSolve = () => {
     <main className="flex justify-center gap-[32px] pt-[32px] w-full min-h-screen bg-[#F6F7F8]">
       <RoundedBlock className="w-[348px] h-[602px]" title="내 강좌">
         <section className="flex flex-col justify-between pt-[16px] h-full">
-          <div className="flex flex-col gap-[8px]">
-            <CourseItem
-              title="대수학 입문"
-              subject="수학"
-              isSelected={selectedCourse === 0}
-              onClick={() => setSelectedCourse(0)}
-            />
-            <CourseItem
-              title="생물학 기초"
-              subject="과학"
-              isSelected={selectedCourse === 1}
-              onClick={() => setSelectedCourse(1)}
-            />
-            <CourseItem
-              title="대수학 입문"
-              subject="수학"
-              isSelected={selectedCourse === 2}
-              onClick={() => setSelectedCourse(2)}
-            />
+          <div className="flex flex-col gap-[8px] overflow-y-auto max-h-[242px]">
+            {textbooks &&
+              textbooks.map((textbook) => (
+                <CourseItem
+                  key={textbook.textbook_id}
+                  title={textbook.title}
+                  subject={textbook.subject || ""}
+                  isSelected={selectedCourse === textbook}
+                  onClick={() => setSelectedCourse(textbook)}
+                />
+              ))}
           </div>
           <div className="mb-[25px]">
-            <p className="text-[18px] font-bold">생물학 기초 퀴즈</p>
+            <p className="text-[18px] font-bold">
+              {textbooks &&
+                textbooks.find((textbook) => textbook.textbook_id === selectedCourse?.textbook_id)
+                  ?.title}{" "}
+              퀴즈
+            </p>
 
             <div className="flex flex-col gap-[8px] mt-[16px]">
-              <QuizItem
-                title="세포 구조"
-                isSelected={selectedQuiz === 0}
-                onClick={() => setSelectedQuiz(0)}
-              />
-              <QuizItem
-                title="함수의 개념"
-                isSelected={selectedQuiz === 1}
-                onClick={() => setSelectedQuiz(1)}
-              />
-              <QuizItem
-                title="유전"
-                isSelected={selectedQuiz === 2}
-                onClick={() => setSelectedQuiz(2)}
-              />
+              {Object.values(groupedQuizzes).map((quiz) => (
+                <QuizItem
+                  key={quiz.quiz_id}
+                  title={quiz.title}
+                  isSelected={selectedQuizId === quiz.quiz_id}
+                  onClick={() => setSelectedQuizId(quiz.quiz_id)}
+                />
+              ))}
             </div>
           </div>
         </section>
       </RoundedBlock>
       <RoundedBlock className="flex flex-col gap-[16px] w-[728px] h-[657px]">
-        <div className="flex flex-col gap-[4px] mt-[-16px]">
-          <h1 className="text-[24px] font-bold">퀴즈 2: 함수의 개념</h1>
-          <p className="text-[14px] text-[#526D7A]">
-            문항 {step} / {STEP_LIMIT}
-          </p>
-        </div>
-        <div className="h-[4px] rounded-[9999px] bg-[#F6F7F8]"></div>
+        {selectedQuizId && groupedQuizzes[selectedQuizId] && (
+          <>
+            <div className="flex flex-col gap-[4px] mt-[-16px]">
+              <h1 className="text-[24px] font-bold">
+                퀴즈: {groupedQuizzes[selectedQuizId].title}
+              </h1>
+              <p className="text-[14px] text-[#526D7A]">
+                문항 {step} / {groupedQuizzes[selectedQuizId].questions.length}
+              </p>
+            </div>
+            <div className="h-[4px] rounded-[9999px] bg-[#F6F7F8]"></div>
 
-        <h2 className="text-[18px] font-semibold text-[#0D1F29]">
-          {quizList[0].question_content}
-        </h2>
-        <section className="flex flex-col gap-[16px] py-[8px]">
-          {quizList[0].options.map((item) => (
-            <SelectItem
-              isSelected={selectQuizAnswer === item}
-              onClick={() => {
-                setSelectQuizAnswer(item);
-              }}
-            >
-              {item}
-            </SelectItem>
-          ))}
-        </section>
+            {groupedQuizzes[selectedQuizId].questions[step - 1] && (
+              <>
+                <h2 className="text-[18px] font-semibold text-[#0D1F29]">
+                  {groupedQuizzes[selectedQuizId].questions[step - 1].question_content}
+                </h2>
+                <section className="flex flex-col gap-[16px] py-[8px]">
+                  {groupedQuizzes[selectedQuizId].questions[step - 1].options?.map(
+                    (item, index) => (
+                      <SelectItem
+                        key={index}
+                        isSelected={selectQuizAnswer === item}
+                        onClick={() => {
+                          setSelectQuizAnswer(item);
+                        }}
+                      >
+                        {item}
+                      </SelectItem>
+                    )
+                  )}
+                </section>
+              </>
+            )}
+          </>
+        )}
 
-        <div className="flex justify-end w-full mt-[16px] mb-[8px]">
-          <button
-            className="w-[112px] h-[40px] bg-[#13A4EC] rounded-[12px] text-[16px] text-white font-bold cursor-pointer"
-            onClick={onClickQuizSubmit}
-          >
-            정답 제출
-          </button>
-        </div>
+        {selectedQuizId &&
+          groupedQuizzes[selectedQuizId] &&
+          groupedQuizzes[selectedQuizId].questions[step - 1] && (
+            <div className="flex justify-end w-full mt-[16px] mb-[8px]">
+              <button
+                className="w-[112px] h-[40px] bg-[#13A4EC] rounded-[12px] text-[16px] text-white font-bold cursor-pointer"
+                onClick={onClickQuizSubmit}
+              >
+                정답 제출
+              </button>
+            </div>
+          )}
 
         <div className="h-[1px] border border-[#E2E8F0]" />
 
-        <div className="flex justify-center items-center gap-[70px] w-full">
-          <button
-            className="w-[143px] h-[40px] rounded-[12px] bg-[#13A4EC] text-[24px] text-white cursor-pointer"
-            onClick={() => {
-              if (step === 1) {
-                return;
-              }
-              setStep(step - 1);
-            }}
-          >
-            이전페이지
-          </button>
-          <p>
-            {step} / {STEP_LIMIT}
-          </p>
-          <button
-            className="w-[143px] h-[40px] rounded-[12px] bg-[#13A4EC] text-[24px] text-white cursor-pointer"
-            onClick={() => {
-              if (step === STEP_LIMIT) {
-                return;
-              }
-              setStep(step + 1);
-            }}
-          >
-            다음페이지
-          </button>
-        </div>
+        {selectedQuizId && groupedQuizzes[selectedQuizId] && (
+          <div className="flex justify-center items-center gap-[70px] w-full">
+            <button
+              className="w-[143px] h-[40px] rounded-[12px] bg-[#13A4EC] text-[24px] text-white cursor-pointer"
+              onClick={() => {
+                if (step === 1) {
+                  return;
+                }
+                setStep(step - 1);
+                setSelectQuizAnswer(""); // 이전 문제로 이동 시 답안 초기화
+              }}
+            >
+              이전페이지
+            </button>
+            <p>
+              {step} / {groupedQuizzes[selectedQuizId].questions.length}
+            </p>
+            <button
+              className="w-[143px] h-[40px] rounded-[12px] bg-[#13A4EC] text-[24px] text-white cursor-pointer"
+              onClick={() => {
+                const stepLimit = groupedQuizzes[selectedQuizId].questions.length;
+                if (step === stepLimit) {
+                  return;
+                }
+                setStep(step + 1);
+                setSelectQuizAnswer(""); // 다음 문제로 이동 시 답안 초기화
+              }}
+            >
+              다음페이지
+            </button>
+          </div>
+        )}
       </RoundedBlock>
       <RoundedBlock
         className="flex flex-col gap-[16px] w-[348px] h-[248px]"
