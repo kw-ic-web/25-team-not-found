@@ -385,14 +385,24 @@
 - **인증**: ✅ (Bearer)
 - **응답 (200)**
     ```json
-    {
-        "textbook_id": "d4c1b8e2-5e91-4ee4-9dad-bcad58b74f59",
-        "title": "웹서비스설계",
-        "created_at": "2025-11-28T11:11:11.000Z",
-        "latest_version": 3,
-        "author_id": 3,
-        "author_nickname": "hyewon"
-    }
+    [
+        {
+            "textbook_id": "1111-aaaa",
+            "title": "웹서비스설계",
+            "created_at": "2025-11-28T11:11:11.000Z",
+            "latest_version": 3,
+            "author_id": 3,
+            "author_nickname": "hyewon"
+        },
+        {
+            "textbook_id": "2222-bbbb",
+            "title": "자료구조",
+            "created_at": "2025-11-20T09:00:00.000Z",
+            "latest_version": 2,
+            "author_id": 7,
+            "author_nickname": "teacherA"
+        }
+    ]
     ```
 ---
 
@@ -565,14 +575,24 @@
 - **인증**: ✅ (Bearer)
 - **응답 (200)**
     ```json
-    {
-        "textbook_id": "d4c1b8e2-5e91-4ee4-9dad-bcad58b74f59",
-        "title": "웹서비스설계",
-        "created_at": "2025-11-28T11:11:11.000Z",
-        "latest_version": 3,
-        "author_id": 3,
-        "author_nickname": "hyewon"
-    }
+    [
+        {
+            "textbook_id": "1111-aaaa",
+            "title": "웹서비스설계",
+            "created_at": "2025-11-28T11:11:11.000Z",
+            "latest_version": 3,
+            "author_id": 3,
+            "author_nickname": "hyewon"
+        },
+        {
+            "textbook_id": "2222-bbbb",
+            "title": "자료구조",
+            "created_at": "2025-11-20T09:00:00.000Z",
+            "latest_version": 2,
+            "author_id": 7,
+            "author_nickname": "teacherA"
+        }
+    ]
     ```
 ---
 
