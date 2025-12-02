@@ -60,8 +60,8 @@ export const login = async (userData) => {
     payload,
     process.env.JWT_SECRET,
     {
-      expiresIn: process.env.JWT_EXPIRES_IN,
-      issuer: process.env.JWT_ISSUER,
+      expiresIn: process.env.JWT_EXPIRES_IN || '1h',
+      issuer: process.env.JWT_ISSUER || 'default_issuer',
     }
   );
 

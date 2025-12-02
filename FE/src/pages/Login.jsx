@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://223.194.46.67:21090";
+  import.meta.env.VITE_API_BASE_URL || "https://team10-api.kwweb.org";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -55,7 +55,7 @@ export default function Login() {
       }
 
       // 첫 로그인 후 역할 선택 페이지
-      navigate("/role-select");
+      navigate("/teacher");
     } catch (err) {
       console.error(err);
       setGeneralError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");

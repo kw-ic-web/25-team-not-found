@@ -4,7 +4,6 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import DefaultLayout from "./layouts/DefaultLayout";
 import DefaultLayoutV2 from "./layouts/DefaultLayoutV2";
 import StudentDefaultLayout from "./layouts/StudentDefaultLayout";
-import MainAside from "./layouts/MainAside";
 
 // 페이지
 import TeacherQuiz from "./pages/TeacherQuiz";
@@ -48,11 +47,15 @@ const router = createBrowserRouter([
             element: <Login />,
           },
 
-          { path: "lecture", element: <Lecture /> },
+        
           { path: "signup", element: <Signup /> },
           
         ],
+        
       },
+      
+      { path: "lecture", element: <Lecture /> },
+
       {
         path: "student",
         children: [

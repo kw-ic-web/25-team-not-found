@@ -19,7 +19,7 @@ router.post("/", authMiddleware, async (req, res) => {
       `INSERT INTO public.textbooks (author_id, title)
        VALUES ($1, $2)
        RETURNING textbook_id, title, created_at`,
-      [req.user.user_id, title.trim()]
+      [req.user.id, title.trim()]
     );
     const textbookId = r1.rows[0].textbook_id;
 
@@ -34,7 +34,7 @@ router.post("/", authMiddleware, async (req, res) => {
       `INSERT INTO public.enrollments (user_id, textbook_id, role)
        VALUES ($1, $2, 'teacher')
        ON CONFLICT (user_id, textbook_id) DO NOTHING`,
-      [req.user.user_id, textbookId]
+      [req.user.id, textbookId]
     );
 
     await client.query("COMMIT");
@@ -60,7 +60,7 @@ router.get("/mine", authMiddleware, async (req, res) => {
        FROM public.textbooks t
        WHERE t.author_id = $1
        ORDER BY t.created_at DESC`,
-      [req.user.user_id]
+      [req.user.id]
     );
     return res.json(r.rows);
   } catch (e) {
@@ -100,8 +100,8 @@ router.post("/:textbookId/versions", authMiddleware, checkEnrollment, async (req
         const fromVid = rFrom.rows[0].version_id;
         const toVid = rV.rows[0].version_id;
         await client.query(
-          `INSERT INTO public.textbook_pages (version_id, page_number, content)
-           SELECT $1, p.page_number, p.content
+          `INSERT INTO public.textbook_pages (version_id, page_number, content, original_page_id)
+           SELECT $1, p.page_number, p.content, p.original_page_id
            FROM public.textbook_pages p
            WHERE p.version_id=$2`,
           [toVid, fromVid]
@@ -123,15 +123,24 @@ router.post("/:textbookId/versions", authMiddleware, checkEnrollment, async (req
 router.get("/:textbookId/versions/:version/pages", authMiddleware, checkEnrollment, async (req, res) => {
   try {
     const { textbookId, version } = req.params;
-    const r = await pool.query(
-      `SELECT p.page_id, p.page_number, p.content
-       FROM public.textbook_pages p
-       JOIN public.textbook_versions v ON p.version_id = v.version_id
-       WHERE v.textbook_id=$1 AND v.version=$2
-       ORDER BY p.page_number ASC`,
-      [textbookId, Number(version)]
+
+    const rV = await pool.query(
+      `SELECT version_id FROM public.textbook_versions WHERE textbook_id=$1 AND version=$2`,
+      [textbookId, version]
     );
-    return res.json(r.rows);
+    if (rV.rowCount === 0) return res.status(404).json({ message: "version not found" });
+
+    const versionId = rV.rows[0].version_id;
+
+    const rPages = await pool.query(
+      `SELECT original_page_id AS page_id, page_id AS record_id, page_number, content
+       FROM public.textbook_pages
+       WHERE version_id = $1
+       ORDER BY page_number ASC`,
+      [versionId]
+    );
+
+    return res.json(rPages.rows);
   } catch (e) {
     console.error("LIST PAGES ERROR:", e);
     return res.status(500).json({ message: "list pages failed" });
@@ -153,9 +162,9 @@ router.post("/:textbookId/versions/:version/pages", authMiddleware, checkEnrollm
     if (rV.rowCount === 0) return res.status(404).json({ message: "version not found" });
 
     const r = await pool.query(
-      `INSERT INTO public.textbook_pages (version_id, page_number, content)
-       VALUES ($1, $2, $3)
-       RETURNING page_id, page_number, content`,
+      `INSERT INTO public.textbook_pages (version_id, page_number, content, original_page_id)
+       VALUES ($1, $2, $3, gen_random_uuid())
+       RETURNING original_page_id AS page_id, page_id AS record_id, page_number, content`,
       [rV.rows[0].version_id, page_number, content || null]
     );
     return res.status(201).json(r.rows[0]);
@@ -209,9 +218,11 @@ router.put("/:textbookId/versions/:version/pages/:pageId", authMiddleware, check
     const r = await pool.query(
       `UPDATE public.textbook_pages
        SET content = $1
-       WHERE page_id = $2
-       RETURNING page_id, page_number, content`,
-      [content, pageId]
+       WHERE original_page_id = $2 AND version_id = (
+         SELECT version_id FROM public.textbook_versions WHERE textbook_id = $3 AND version = $4
+       )
+       RETURNING original_page_id AS page_id, page_id AS record_id, page_number, content`,
+      [content, pageId, textbookId, version]
     );
 
     if (r.rowCount === 0) {
@@ -226,25 +237,34 @@ router.put("/:textbookId/versions/:version/pages/:pageId", authMiddleware, check
 });
 
 router.delete(
-  "/pages/:pageId",
+  "/:textbookId/versions/:version/pages/:pageId",
   authMiddleware,
   checkEnrollment,
   async (req, res) => {
     const client = await pool.connect();
     try {
-      const { pageId } = req.params;
+      const { textbookId, version, pageId } = req.params;
 
       await client.query("BEGIN");
 
+      // Verify version exists and get version_id
+      const rV = await client.query(
+        `SELECT version_id FROM public.textbook_versions WHERE textbook_id=$1 AND version=$2`,
+        [textbookId, version]
+      );
+      if (rV.rowCount === 0) {
+        await client.query("ROLLBACK");
+        return res.status(404).json({ message: "version not found" });
+      }
+      const versionId = rV.rows[0].version_id;
+
       const rCheck = await client.query(
         `
-        SELECT t.textbook_id
-        FROM public.textbook_pages p
-        JOIN public.textbook_versions v ON p.version_id = v.version_id
-        JOIN public.textbooks t ON v.textbook_id = t.textbook_id
-        WHERE p.page_id = $1
+        SELECT page_id
+        FROM public.textbook_pages
+        WHERE original_page_id = $1 AND version_id = $2
         `,
-        [pageId]
+        [pageId, versionId]
       );
 
       if (rCheck.rowCount === 0) {
@@ -257,10 +277,10 @@ router.delete(
       const rDel = await client.query(
         `
         DELETE FROM public.textbook_pages
-        WHERE page_id = $1
-        RETURNING page_id
+        WHERE original_page_id = $1 AND version_id = $2
+        RETURNING original_page_id AS page_id
         `,
-        [pageId]
+        [pageId, versionId]
       );
 
       await client.query("COMMIT");
