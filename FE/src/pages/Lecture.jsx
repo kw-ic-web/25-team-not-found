@@ -40,25 +40,27 @@ function extractTextFromNode(node) {
   if (typeof node === "object") {
     let result = "";
 
-    // 1) props 안에 텍스트가 들어 있는 경우
+    // 에디터들이 자주 쓰는 키들만 골라서 훑기 (id, type 같은 건 무시)
+    const candidateKeys = [
+      "text",
+      "content",
+      "children",
+      "blocks",
+      "document",
+      "doc",
+      "paragraphs",
+      "spans",
+      "inlines",
+    ];
+
     if (node.props) {
       result += extractTextFromNode(node.props);
     }
 
-    // 2) 에디터가 페이지 내용을 blocks 배열 안에 넣는 경우
-    if ("blocks" in node) {
-      result += extractTextFromNode(node.blocks);
-    }
-
-    // 3) 바로 content / children / text가 있는 경우
-    if ("content" in node) {
-      result += extractTextFromNode(node.content);
-    }
-    if ("children" in node) {
-      result += extractTextFromNode(node.children);
-    }
-    if ("text" in node) {
-      result += extractTextFromNode(node.text);
+    for (const key of candidateKeys) {
+      if (key in node) {
+        result += extractTextFromNode(node[key]);
+      }
     }
 
     return result;
@@ -67,43 +69,41 @@ function extractTextFromNode(node) {
   return "";
 }
 
-
-
 function normalizePageContent(raw) {
   if (raw == null) return "";
 
-  try {
-    let parsed = raw;
+  // 1) 문자열인 경우: JSON 파싱 먼저 시도
+  if (typeof raw === "string") {
+    // 그냥 짧은 일반 텍스트(예: "안녕하세요")일 수 있으니까,
+    // 먼저 "JSON 같아 보이는지" 간단 체크
+    const looksLikeJson =
+      (raw.startsWith("{") && raw.endsWith("}")) ||
+      (raw.startsWith("[") && raw.endsWith("]"));
 
-    // content가 JSON 문자열이면 파싱 먼저 시도
-    if (typeof raw === "string") {
+    if (looksLikeJson) {
       try {
-        parsed = JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        const text = extractTextFromNode(parsed);
+        if (text && text.trim().length > 0) return text;
       } catch {
-        parsed = raw; // 그냥 문자열이면 그대로 둠
+        // JSON 파싱 실패하면 그냥 아래로 내려감
       }
     }
 
-    const text = extractTextFromNode(parsed);
-
-    if (text && text.trim().length > 0) {
-      return text;
-    }
-
-    // 그래도 없으면 문자열/숫자는 그대로 반환
-    if (typeof raw === "string" || typeof raw === "number") {
-      return String(raw);
-    }
-
-    // 객체인데 텍스트가 전혀 없으면 그냥 빈 문자열
-    return "";
-  } catch {
-    if (typeof raw === "string" || typeof raw === "number") {
-      return String(raw);
-    }
-    return "";
+    // JSON 아니면 그냥 문자열 그대로 사용
+    return raw;
   }
+
+  // 2) 객체/배열인 경우
+  if (typeof raw === "object") {
+    const text = extractTextFromNode(raw);
+    return text && text.trim().length > 0 ? text : "";
+  }
+
+  // 3) 숫자 등
+  return String(raw);
 }
+
 // API 
 
 // 내 교재 목록
@@ -405,19 +405,30 @@ export default function Lecture() {
         },
       ];
     }
+  
     return [
       {
         title: selectedTextbookTitle || `교재 ID ${selectedTextbookId}`,
         desc: `총 ${pages.length} 페이지`,
-        items: pages.map((p) => ({
-          pageId: p.page_id ?? p.page_number ?? null,
-          h3: `${p.page_number ?? ""} 페이지`,
-          text: normalizePageContent(p.content),
-        })),
+        items: pages.map((p, idx) => {
+          const rawContent =
+            p.content ??
+            p.blocks ??
+            p.document ??
+            p.doc ??
+            p.body ??
+            null;
+  
+          return {
+            pageId: p.page_id ?? p.page_number ?? idx,
+            h3: `${p.page_number ?? idx + 1} 페이지`,
+            text: normalizePageContent(rawContent),
+          };
+        }),
       },
     ];
   }, [pages, selectedTextbookId, selectedVersion, selectedTextbookTitle]);
-
+  
   // 
   // 로컬 미디어
   async function ensureLocalStream() {
