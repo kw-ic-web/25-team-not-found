@@ -85,8 +85,7 @@ io.on("connection", (socket) => {
       textbookId,
       pageId,
       from: userName,
-      senderId: socket.id,
-      at: Date.now(),
+      at: new Date().toISOString(),
       reason: "save_success",
     });
   });
