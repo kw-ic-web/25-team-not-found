@@ -1,8 +1,12 @@
 // 1) 화상 통화 방 (textbook 기준)
 //    roomId = `video:textbook:${textbookId}`
 //    예) "video:textbook:3"
-//
+
 // 2) 교재 편집 방 (textbook + page 기준)
+//    roomId = `edit:textbook:${textbookId}:page:${pageId}`
+//    예) "edit:textbook:3:page:12"
+
+// 3) 저장 완료(수정완료) 알림 방 (textbook + page 기준)
 //    roomId = `edit:textbook:${textbookId}:page:${pageId}`
 //    예) "edit:textbook:3:page:12"
 
@@ -69,6 +73,21 @@ io.on("connection", (socket) => {
       socketId: socket.id,
       userName,
       isEditing,
+    });
+  });
+
+  socket.on("refresh_request", ({ roomId, textbookId, pageId, userName }) => {
+    console.log(
+      `refresh_request: ${userName} saved -> notify refresh in ${roomId} (${textbookId}/${pageId})`
+    );
+
+    io.to(roomId).emit("refresh_required", {
+      textbookId,
+      pageId,
+      from: userName,
+      senderId: socket.id,
+      at: Date.now(),
+      reason: "save_success",
     });
   });
 
