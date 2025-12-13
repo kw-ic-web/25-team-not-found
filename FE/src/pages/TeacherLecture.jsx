@@ -42,7 +42,7 @@ export default function TeacherLecture() {
         console.log("[TeacherLecture] /textbooks/mine status:", res.status);
 
         if (!res.ok) {
-          setTextbookStatus(`교재 목록 API 호출 실패 (status: ${res.status})`);
+          setTextbookStatus(`교재 목록 불러오기 실패 (status: ${res.status})`);
           return;
         }
 
@@ -72,11 +72,11 @@ export default function TeacherLecture() {
             "생성된 교재가 없습니다. 먼저 교재를 하나 이상 생성해 주세요."
           );
         } else {
-          setTextbookStatus(`내 교재 ${normalized.length}개 로드 완료`);
+          setTextbookStatus(`내 교재 ${normalized.length}개 로딩 완료`);
         }
       } catch (err) {
         console.error("[TeacherLecture] 교재 목록 불러오기 오류:", err);
-        setTextbookStatus("교재 목록 API 호출 중 오류가 발생했습니다.");
+        setTextbookStatus("교재 목록 불러오기 중 오류가 발생했습니다.");
       }
     }
 
