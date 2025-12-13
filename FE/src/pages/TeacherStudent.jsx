@@ -70,14 +70,14 @@ export default function TeacherStudent() {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // 명세서대로 Bearer 토큰
+            Authorization: `Bearer ${token}`, 
           },
         });
 
         console.log("교재 목록 API status:", res.status);
 
         if (!res.ok) {
-          setTextbookStatus(`교재 목록 API 호출 실패 (status: ${res.status})`);
+          setTextbookStatus(`교재 목록 불러오기 실패 (status: ${res.status})`);
           return;
         }
 
@@ -89,14 +89,14 @@ export default function TeacherStudent() {
           return;
         }
 
-        setTextbookStatus(`교재 ${data.length}개 로드 완료`);
+        setTextbookStatus(`교재 총 ${data.length}개`);
 
         // 기본 선택: 첫 번째 교재
         setSelectedTextbookId(data[0].textbook_id);
         setSelectedVersion(data[0].latest_version ?? 1);
       } catch (err) {
         console.error("교재 목록을 불러오지 못했습니다.", err);
-        setTextbookStatus("교재 목록 API 호출 중 에러 발생");
+        setTextbookStatus("교재 목록 불러오기 중 에러 발생");
       }
     }
 
@@ -133,7 +133,7 @@ export default function TeacherStudent() {
         console.log("학생 목록 API status:", res.status);
 
         if (!res.ok) {
-          setApiStatus(`학생 목록 API 호출 실패 (status: ${res.status})`);
+          setApiStatus(`학생 목록 불러오기 실패 (status: ${res.status})`);
           setStudents([]);
           return;
         }
@@ -143,10 +143,10 @@ export default function TeacherStudent() {
 
         const list = data?.students ?? [];
         setStudents(list);
-        setApiStatus(`학생 목록 API 호출 성공 / 학생 수: ${list.length}명`);
+        setApiStatus(`학생 목록 불러오기 성공 / 학생 수: ${list.length}명`);
       } catch (err) {
         console.error("학생 목록을 불러오지 못했습니다.", err);
-        setApiStatus("학생 목록 API 호출 중 에러 발생");
+        setApiStatus("학생 목록 불러오기 중 에러 발생");
         setStudents([]);
       }
     }
@@ -210,14 +210,14 @@ export default function TeacherStudent() {
 
           {/* 교재 선택 */}
           <section className="space-y-2">
-            <h3 className="text-sm font-semibold text-neutral-700">교재 선택</h3>
+            <h3 className="text-m font-semibold text-neutral-700">교재 선택</h3>
 
             {textbookStatus && (
-              <p className="text-xs text-neutral-500">{textbookStatus}</p>
+              <p className="text-s text-neutral-500">{textbookStatus}</p>
             )}
 
             {textbooks.length > 0 && (
-              <div className="mt-1 max-h-40 space-y-1 overflow-y-auto pr-1">
+              <div className="mt-1 max-h-200 space-y-1 overflow-y-auto pr-1">
                 {textbooks.map((tb) => {
                   const isActive = tb.textbook_id === selectedTextbookId;
                   return (
@@ -245,109 +245,6 @@ export default function TeacherStudent() {
                 })}
               </div>
             )}
-          </section>
-
-          {/* Nav */}
-          <nav className="space-y-2">
-            <a
-              className="flex items-center gap-3 h-10 px-3 rounded-lg bg-sky-50 text-sky-600"
-              href="#"
-              aria-current="page"
-            >
-              <span className="inline-block w-4 h-4 rounded bg-sky-500/90" />
-              <span className="text-base font-medium">전체 학생</span>
-            </a>
-            <a
-              className="flex items-center gap-3 h-10 px-3 rounded-lg hover:bg-neutral-100"
-              href="#"
-            >
-              <span className="inline-block w-4 h-4 rounded bg-neutral-900/90" />
-              <span className="text-base text-neutral-800">위기 학생</span>
-            </a>
-          </nav>
-
-          {/* 검색 & 필터 */}
-          <section className="relative">
-            <h3 className="mb-4 text-[17.7px] font-bold text-neutral-800">
-              검색 & 필터
-            </h3>
-
-            {/* 검색 */}
-            <div className="relative mb-6">
-              <input
-                className="w-full h-[41px] rounded-lg border border-neutral-300 bg-neutral-100 pl-10 pr-4 text-sm placeholder:text-neutral-400"
-                placeholder="학생 검색..."
-              />
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded bg-neutral-300" />
-            </div>
-
-            {/* 정렬 기준 */}
-            <div className="mb-6 space-y-2">
-              <label className="text-sm font-medium text-neutral-600">
-                정렬 기준
-              </label>
-              <div className="relative">
-                <select className="w-full h-10 rounded-lg border border-neutral-300 bg-neutral-100 px-3 pr-8 text-[16px]">
-                  <option>이름 (A-Z)</option>
-                  <option>최근 접속</option>
-                  <option>진도율</option>
-                  <option>평균 퀴즈 점수</option>
-                  <option>출석</option>
-                </select>
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500">
-                  ⌄
-                </span>
-              </div>
-            </div>
-
-            {/* 상태 필터 */}
-            <div className="space-y-2">
-              <div className="text-sm font-medium text-neutral-600">
-                상태 필터
-              </div>
-
-              <label className="flex items-center gap-2 text-neutral-800">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded-[4px] border border-neutral-500 accent-sky-500"
-                  value="active"
-                  defaultChecked
-                />
-                <span className="text-sm">활동</span>
-              </label>
-
-              <label className="flex items-center gap-2 text-neutral-800">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded-[4px] border border-neutral-500 accent-sky-500"
-                  value="inactive"
-                  defaultChecked
-                />
-                <span className="text-sm">비활동</span>
-              </label>
-
-              <label className="flex items-center gap-2 text-neutral-800">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded-[4px] border border-neutral-500 accent-sky-500"
-                  value="risk"
-                  defaultChecked
-                />
-                <span className="text-sm">위기</span>
-              </label>
-            </div>
-          </section>
-
-          <div className="grow" />
-
-          <section className="space-y-3">
-            <h3 className="text-lg font-bold text-neutral-800">일괄 작업</h3>
-            <button className="w-full h-10 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600">
-              데이터 내보내기
-            </button>
-            <button className="w-full h-10 rounded-lg border border-neutral-300 text-neutral-800 text-sm hover:bg-neutral-50">
-              선택 학생에게 메시지
-            </button>
           </section>
         </aside>
 
@@ -381,9 +278,6 @@ export default function TeacherStudent() {
                   </div>
                   <div className="px-4 py-3 text-sm font-medium text-neutral-800">
                     이름
-                  </div>
-                  <div className="px-4 py-3 text-sm font-medium text-neutral-800">
-                    최근 접속
                   </div>
                   <div className="px-4 py-3 text-sm font-medium text-neutral-800">
                     진도율
