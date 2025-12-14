@@ -1,4 +1,19 @@
-import { register, login, checkUsernameAvailability } from '../services/user.service.js';
+import { register, login, checkUsernameAvailability, updateWeeklyGoal } from '../services/user.service.js';
+
+export const updateWeeklyGoalController = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { weekly_goal } = req.body;
+    if (typeof weekly_goal !== 'number') {
+      return res.status(400).json({ message: 'weekly_goal must be a number' });
+    }
+    const updatedUser = await updateWeeklyGoal(userId, weekly_goal);
+    res.json({ weekly_goal_hours: updatedUser.weekly_goal_hours });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const registerController = async (req, res, next) => {
   try {
