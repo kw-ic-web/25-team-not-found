@@ -197,32 +197,22 @@ const StudentMain = () => {
           <section className="flex gap-[24px]">
             <RoundedBlock
               className="w-[1048px] h-[190px]"
-              title="퀴즈 바로가기"
+              title="나의 진행률 요약"
               rightElement={
                 <button className="text-[14px] text-[#13A4EC] font-semibold cursor-pointer">
-                  모두 보기
+                  학습 대시보드 →
                 </button>
               }
             >
-              <div className="flex gap-[16px] mt-[16px]">
-                <QuizShortcutItem
-                  title="생물학 기초"
-                  quizAmount="2"
-                  questionsAmount="10"
-                  limit="15분"
-                />
-                <QuizShortcutItem
-                  title="생물학 기초"
-                  quizAmount="2"
-                  questionsAmount="10"
-                  limit="15분"
-                />
-                <QuizShortcutItem
-                  title="생물학 기초"
-                  quizAmount="2"
-                  questionsAmount="10"
-                  limit="15분"
-                />
+              <div className="flex flex-col gap-[20px] mt-[24px]">
+                <div className="flex gap-[16px]">
+                  <MyProgressSummaryItem title="완료한 수업" amount="12 / 20" />
+                  <MyProgressSummaryItem title="퀴즈 평균점" amount="82점" />
+                </div>
+                <div className="flex gap-[16px]">
+                  <MyProgressSummaryItem title="이번 주 학습 시간" amount="4.5h / 6h" />
+                  <MyProgressSummaryItem title="과제 제출" amount="3 / 5" />
+                </div>
               </div>
             </RoundedBlock>
             <RoundedBlock
@@ -255,37 +245,6 @@ const StudentMain = () => {
                 </div>
               </div>
             </RoundedBlock>
-          </section>
-          <section className="flex gap-[24px]">
-            <RoundedBlock
-              className="flex-1 min-w-[512px] h-[238.5px]"
-              title="나의 진행률 요약"
-              rightElement={
-                <button className="text-[14px] text-[#13A4EC] font-semibold cursor-pointer">
-                  학습 대시보드 →
-                </button>
-              }
-            >
-              <div className="flex flex-col gap-[20px] mt-[24px]">
-                <div className="flex gap-[16px]">
-                  <MyProgressSummaryItem title="완료한 수업" amount="12 / 20" />
-                  <MyProgressSummaryItem title="퀴즈 평균점" amount="82점" />
-                </div>
-                <div className="flex gap-[16px]">
-                  <MyProgressSummaryItem title="이번 주 학습 시간" amount="4.5h / 6h" />
-                  <MyProgressSummaryItem title="과제 제출" amount="3 / 5" />
-                </div>
-              </div>
-            </RoundedBlock>
-            <RoundedBlock
-              className="w-[512px] h-[238.5px]"
-              title="주간 학습 활동"
-              rightElement={
-                <button className="w-[80px] h-[28px] bg-[#F1F5F9] rounded-[8px] text-[14px] text-[#475569]">
-                  최근 7일
-                </button>
-              }
-            />
           </section>
         </section>
       </section>
