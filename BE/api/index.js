@@ -9,6 +9,7 @@ import authRoutes from './auth.routes.js';
 import enrollmentRoutes from './enrollment.routes.js';
 import learnRoutes from './learn.routes.js';
 import teacherRoutes from './teacher.routes.js';
+import userRoutes from './user.routes.js';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/auth', authRoutes);
 router.use('/enrollments', enrollmentRoutes);
 router.use('/learn', learnRoutes);
 router.use('/teacher', teacherRoutes);
+router.use('/users', userRoutes);
 
 export default router;

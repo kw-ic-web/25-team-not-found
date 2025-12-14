@@ -17,3 +17,14 @@ export const findUserByUsername = async (username) => {
   );
   return result.rows[0];
 };
+
+export const updateWeeklyGoal = async (userId, weeklyGoal) => {
+  const query = `
+    UPDATE users
+    SET weekly_goal_hours = $2
+    WHERE user_id = $1
+    RETURNING weekly_goal_hours;
+  `;
+  const { rows } = await pool.query(query, [userId, weeklyGoal]);
+  return rows[0];
+};

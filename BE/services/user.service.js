@@ -1,4 +1,6 @@
-import { createUser, findUserByUsername } from '../repositories/user.repository.js';
+import { createUser, findUserByUsername, updateWeeklyGoal as repoUpdateWeeklyGoal } from '../repositories/user.repository.js';
+
+
 import { hashPassword, comparePassword } from '../utils/hash.js';
 import jwt from 'jsonwebtoken';
 
@@ -23,6 +25,13 @@ export const register = async (userData) => {
     nickname: newUser.nickname,
     created_at: newUser.created_at,
   };
+};
+
+export const updateWeeklyGoal = async (userId, weeklyGoal) => {
+  if (weeklyGoal < 0) {
+    throw new Error("Weekly goal cannot be negative");
+  }
+  return await repoUpdateWeeklyGoal(userId, weeklyGoal);
 };
 
 export const checkUsernameAvailability = async (username) => {

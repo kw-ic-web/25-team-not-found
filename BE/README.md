@@ -151,205 +151,50 @@
 ---
 
 # Dashboard (대시보드)
-# API 명세서
-
-이 문서는 애플리케이션의 API 엔드포인트를 설명합니다.
-
----
-
-# Auth (인증)
-
-### POST /auth/register
-
-- **설명**: 새로운 사용자를 등록(회원가입)합니다.
-- **인증**: ❌
-- **요청 본문 (Request Body)**:
-    ```json
-    {
-        "username": "testuser",
-        "password": "password123",
-        "nickname": "Test User"
-    }
-    ```
-- **응답 (201)**
-    ```json
-    {
-        "user_id": 1,
-        "username": "testuser",
-        "nickname": "Test User",
-        "created_at": "2025-11-12T12:00:00.000Z"
-    }
-    ```
-
-### POST /auth/login
-
-- **설명**: 사용자 로그인을 수행하고 JWT 토큰을 반환합니다.
-- **인증**: ❌
-- **요청 본문 (Request Body)**:
-    ```json
-    {
-        "username": "testuser",
-        "password": "password123"
-    }
-    ```
-- **응답 (200)**
-    ```json
-    {
-        "code": 200,
-        "message": "토큰이 발급되었습니다.",
-        "access_token": "your_jwt_token",
-        "token_type": "Bearer",
-        "user": {
-            "user_id": 1,
-            "username": "testuser",
-            "nickname": "Test User"
-        }
-    }
-    ```
-
-### POST /auth/check-username
-
-- **설명**: 사용자 이름(ID)의 중복 여부를 확인합니다.
-- **인증**: ❌
-- **요청 본문 (Request Body)**:
-    ```json
-    {
-        "username": "testuser"
-    }
-    ```
-- **응답 (200)**
-    ```json
-    {
-        "available": true
-    }
-    ```
-
----
-
-# Annotations (주석)
-
-### GET /annotations
-
-- **설명**: 특정 페이지 또는 교재(Textbook)에 대한 주석을 조회합니다.
-- **인증**: ✅ (Bearer)
-- **쿼리 파라미터 (Query Parameters)**:
-    - `page_id` (integer): 주석을 조회할 페이지의 ID.
-    - `textbook_id` (integer): 주석을 조회할 교재의 ID.
-    *(참고: `page_id` 또는 `textbook_id` 중 하나는 반드시 제공되어야 합니다)*
-- **응답 (200)**
-    ```json
-    {
-        "success": true,
-        "data": [
-            {
-                "annotation_id": 1,
-                "user_id": 1,
-                "page_id": 1,
-                "annotation_type": "highlight",
-                "content": "This is a highlighted text.",
-                "location_data": {},
-                "created_at": "2025-11-07T12:00:00.000Z"
-            }
-        ]
-    }
-    ```
-
-### POST /annotations
-
-- **설명**: 새로운 주석을 생성합니다.
-- **인증**: ✅ (Bearer)
-- **요청 본문 (Request Body)**:
-    ```json
-    {
-        "page_id": 1,
-        "annotation_type": "memo",
-        "content": "This is a memo.",
-        "location_data": {}
-    }
-    ```
-- **응답 (201)**
-    ```json
-    {
-        "success": true,
-        "data": {
-            "annotation_id": 2,
-            "user_id": 1,
-            "page_id": 1,
-            "annotation_type": "memo",
-            "content": "This is a memo.",
-            "location_data": {},
-            "created_at": "2025-11-07T12:05:00.000Z"
-        }
-    }
-    ```
-
-### PUT /annotations/:annotation_id
-
-- **설명**: 기존 주석을 수정합니다.
-- **인증**: ✅ (Bearer)
-- **요청 본문 (Request Body)**:
-    ```json
-    {
-        "page_id": 1,
-        "annotation_type": "memo",
-        "content": "This is an updated memo.",
-        "location_data": {}
-    }
-    ```
-- **응답 (200)**
-    ```json
-    {
-        "success": true,
-        "data": {
-            "annotation_id": 2,
-            "user_id": 1,
-            "page_id": 1,
-            "annotation_type": "memo",
-            "content": "This is an updated memo.",
-            "location_data": {},
-            "created_at": "2025-11-07T12:05:00.000Z"
-        }
-    }
-    ```
-
-### DELETE /annotations/:annotation_id
-
-- **설명**: 주석을 삭제합니다.
-- **인증**: ✅ (Bearer)
-- **응답 (204)**: 내용 없음 (No content).
-
----
-
-# Dashboard (대시보드)
 
 ### GET /dashboard
 
-- **설명**: 로그인한 사용자의 대시보드 데이터를 조회합니다.
+- **설명**: 학생 대시보드를 위한 종합 데이터를 조회합니다. (KPI, 차트, 교재 진도, 학습 캘린더)
 - **인증**: ✅ (Bearer)
 - **응답 (200)**
     ```json
     {
-        "success": true,
-        "data": {
-            "enrollments": [
-                {
-                    "textbook_id": "some-uuid",
-                    "title": "Math 101",
-                    "author_id": 1,
-                    "role": "student",
-                    "last_accessed": "2025-11-12T12:00:00.000Z",
-                    "progress_rate": 45.5,
-                    "quiz_average_score": 85.0
-                }
+        "summary": {
+            "total_hours": "12.5",
+            "completed_classes": 3,
+            "quizzes_taken": 15,
+            "average_score": 88,
+            "streak": 5,
+            "weekly_goal": {
+                "current": "12.5",
+                "target": 5
+            }
+        },
+        "charts": {
+            "weekly_activity": [
+                { "date": "Dec 08", "hours": 2.5 },
+                { "date": "Dec 09", "hours": 0 }
             ],
-            "feedback": [],
-            "stats": {
-                "average_score": 85.0,
-                "quizzes_taken": 5,
-                "total_pages_read": 50
-            },
-            "teacher_textbooks": []
-        }
+            "quiz_scores": [
+                { "range": "0-20", "count": 1 },
+                { "range": "21-40", "count": 0 },
+                { "range": "41-60", "count": 2 },
+                { "range": "61-80", "count": 5 },
+                { "range": "81-100", "count": 7 }
+            ]
+        },
+        "textbooks": [
+            {
+                "id": "uuid",
+                "title": "Introduction to AI",
+                "progress": 75,
+                "last_accessed": "2025-12-14T10:00:00.000Z"
+            }
+        ],
+        "calendar": [
+            { "date": "2025-12-14", "level": 4 },
+            { "date": "2025-12-13", "level": 2 }
+        ]
     }
     ```
 
@@ -732,3 +577,21 @@
 
 # WebRTC 시그널링 서버 API 명세서
 **https://www.notion.so/WebRTC-API-2b433b8ab6f6804796fffd782ccc1221**
+# Users (사용자)
+
+### PUT /users/goal
+
+- **설명**: 사용자의 주간 학습 목표(시간)를 설정합니다.
+- **인증**: ✅ (Bearer)
+- **요청 본문 (Request Body)**:
+    ```json
+    {
+        "weekly_goal": 10
+    }
+    ```
+- **응답 (200)**
+    ```json
+    {
+        "weekly_goal_hours": 10
+    }
+    ```
