@@ -20,6 +20,7 @@ const StudentDashboard = () => {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(false);
   const [generalError, setGeneralError] = useState("");
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     const run = async () => {
@@ -68,16 +69,16 @@ const StudentDashboard = () => {
       const key = toISODate(d);
 
       const level = map.get(key) ?? 0;
-
-      const type =
-        level <= 0 ? 0 :
-        level === 1 ? 1 :
-        level === 2 ? 2 : 3;
+      const type = level <= 0 ? 0 : level === 1 ? 1 : level === 2 ? 2 : 3;
 
       list.push(type);
     }
     return list;
   }, [dashboard]);
+
+  const textbooks = dashboard?.textbooks || [];
+  const canToggle = textbooks.length > 3;
+  const visibleTextbooks = expanded ? textbooks : textbooks.slice(0, 3);
 
   return (
     <main className="flex flex-col items-center w-full min-h-screen bg-[#F6F7F8]">
@@ -122,26 +123,12 @@ const StudentDashboard = () => {
         {generalError && (
           <p className="text-[12px] leading-4 text-[#DC2626]">{generalError}</p>
         )}
-        {loading && (
-          <p className="text-[12px] text-[#64748B]">불러오는 중...</p>
-        )}
-      
+        {loading && <p className="text-[12px] text-[#64748B]">불러오는 중...</p>}
+
         <div className="flex gap-[16px]">
-          <DiffRoundedBlock
-            title="총 학습 시간"
-            value={summary?.total_hours ?? "0"}
-            diff="-2.5%"
-          />
-          <DiffRoundedBlock
-            title="완료한 수업"
-            value={summary?.completed_classes ?? "0"}
-            diff="+7.6%"
-          />
-          <DiffRoundedBlock
-            title="응시한 퀴즈"
-            value={summary?.quizzes_taken ?? "0"}
-            diff="+2.5%"
-          />
+          <DiffRoundedBlock title="총 학습 시간" value={summary?.total_hours ?? "0"} diff="-2.5%" />
+          <DiffRoundedBlock title="완료한 수업" value={summary?.completed_classes ?? "0"} diff="+7.6%" />
+          <DiffRoundedBlock title="응시한 퀴즈" value={summary?.quizzes_taken ?? "0"} diff="+2.5%" />
           <DiffRoundedBlock
             title="평균 점수"
             value={summary?.average_score != null ? `${summary.average_score}%` : "0%"}
@@ -182,26 +169,49 @@ const StudentDashboard = () => {
                 <span className="text-[#64748B]">지난주 대비</span>
               </p>
             }
-          ></RoundedBlock>
-          <RoundedBlock
-            className="flex flex-col gap-[4px] p-[21px] w-[608px] h-[282px]"
-            title="퀴즈 점수 분포"
-          >
+          />
+          <RoundedBlock className="flex flex-col gap-[4px] p-[21px] w-[608px] h-[282px]" title="퀴즈 점수 분포">
             <p className="text-[12px] text-[#64748B]">최근 기간 응시 퀴즈(구간화)</p>
           </RoundedBlock>
         </div>
 
         <div className="flex justify-between">
           <RoundedBlock
-            className="flex flex-col gap-[12px] p-[21px] w-[816px] h-[400px]"
+            className={[
+              "flex flex-col gap-[12px] p-[21px] w-[816px] overflow-hidden",
+              expanded ? "h-[620px]" : "h-[400px]",
+            ].join(" ")}
             title="교재별 진도"
             rightElement={
-              <button className="text-[14px] text-[#13A4EC] cursor-pointer">모두 펼치기</button>
+              canToggle ? (
+                <button
+                  className="text-[14px] text-[#13A4EC] cursor-pointer"
+                  onClick={() => setExpanded((v) => !v)}
+                >
+                  {expanded ? "접기" : "모두 펼치기"}
+                </button>
+              ) : (
+                <span />
+              )
             }
           >
-            {(dashboard?.textbooks || []).map((tb) => (
-              <ProgressOfBookItem key={tb.id} title={tb.title} progress={`${tb.progress}%`} />
-            ))}
+            <div
+              className="flex flex-col gap-[12px] w-full overflow-y-auto"
+              style={{
+                maxHeight: expanded ? 520 : 300,
+                scrollbarGutter: "stable",
+              }}
+            >
+              {visibleTextbooks.map((tb) => (
+                <div key={tb.id} className="w-full">
+                  <ProgressOfBookItem title={tb.title} progress={`${tb.progress}%`} />
+                </div>
+              ))}
+
+              {!loading && !generalError && textbooks.length === 0 && (
+                <p className="text-[12px] text-[#64748B]">수강 중인 교재가 없습니다.</p>
+              )}
+            </div>
           </RoundedBlock>
           <RoundedBlock
             className="flex flex-col gap-[4px] p-[21px] w-[400px] h-[400px]"
