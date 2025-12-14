@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react"; // ✅ 추가
 import ic_back from "../../assets/icons/student/ic_back.svg";
 import ic_download_black from "../../assets/icons/student/dashboard/ic_download_black.svg";
 import ic_calender from "../../assets/icons/student/dashboard/ic_calender.svg";
@@ -14,20 +15,74 @@ import UpcomingClassItem from "../../components/student/dashboard/UpcomingClassI
 import RecentQuizTable from "../../components/student/dashboard/RecentQuizTable";
 import { useNavigate } from "react-router-dom";
 
+import api from "../../lib/api";
+
 const StudentDashboard = () => {
   const navigate = useNavigate();
 
-  // dummy list, 1-3 euclidean distribution 7 * 5, 31개
-  const list = [];
-  for (let i = 0; i < 7; i++) {
-    for (let j = 0; j < 5; j++) {
-      if (list.length === 31) {
-        break;
-      }
-      list.push(Math.floor(Math.random() * 3) + 1);
-    }
-  }
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [generalError, setGeneralError] = useState("");
 
+  useEffect(() => {
+    const run = async () => {
+      try {
+        setLoading(true);
+        setGeneralError("");
+        const res = await api.get("/dashboard");
+        setDashboard(res.data);
+      } catch (err) {
+        const status = err?.response?.status;
+        if (status === 401) setGeneralError("로그인이 필요합니다. 다시 로그인해주세요.");
+        else if (status >= 500)
+          setGeneralError("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        else
+          setGeneralError(err?.response?.data?.message || "대시보드 조회에 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    run();
+  }, []);
+
+  const summary = dashboard?.summary;
+
+  const calendarList = useMemo(() => {
+    const apiCalendar = dashboard?.calendar || [];
+    const map = new Map(apiCalendar.map((x) => [x.date, x.level]));
+
+    const weeks = 5;
+    const cols = 7;
+    const total = weeks * cols;
+    const today = new Date();
+
+    const toISODate = (d) => {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    };
+
+    const list = [];
+    for (let i = total - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = toISODate(d);
+
+      const level = map.get(key) ?? 0;
+
+      const type =
+        level <= 0 ? 0 :
+        level === 1 ? 1 :
+        level === 2 ? 2 : 3;
+
+      list.push(type);
+    }
+    return list;
+  }, [dashboard]);
+
+  // 최근 퀴즈는 API 응답에 없어서 기존 더미 유지(추후 백엔드 확장 시 교체)
   const recentQuizzes = [
     { title: "퀴즈 12", subject: "수학 교재", score: "92%", status: "통과" },
     { title: "퀴즈 11", subject: "과학 교재", score: "81%", status: "통과" },
@@ -75,25 +130,56 @@ const StudentDashboard = () => {
         </div>
       </header>
       <section className="flex flex-col gap-[32px] p-[24px] w-[1280px]">
+        {generalError && (
+          <p className="text-[12px] leading-4 text-[#DC2626]">{generalError}</p>
+        )}
+        {loading && (
+          <p className="text-[12px] text-[#64748B]">불러오는 중...</p>
+        )}
+      
         <div className="flex gap-[16px]">
-          <DiffRoundedBlock title="총 학습 시간" value="18" diff="-2.5%" />
-          <DiffRoundedBlock title="완료한 수업" value="16" diff="+7.6%" />
-          <DiffRoundedBlock title="응시한 퀴즈" value="7" diff="+2.5%" />
-          <DiffRoundedBlock title="평균 점수" value="84%" diff="-1.2%" />
+          <DiffRoundedBlock
+            title="총 학습 시간"
+            value={summary?.total_hours ?? "0"}
+            diff="-2.5%"
+          />
+          <DiffRoundedBlock
+            title="완료한 수업"
+            value={summary?.completed_classes ?? "0"}
+            diff="+7.6%"
+          />
+          <DiffRoundedBlock
+            title="응시한 퀴즈"
+            value={summary?.quizzes_taken ?? "0"}
+            diff="+2.5%"
+          />
+          <DiffRoundedBlock
+            title="평균 점수"
+            value={summary?.average_score != null ? `${summary.average_score}%` : "0%"}
+            diff="-1.2%"
+          />
+
           <RoundedBlock className="flex flex-col gap-[4px] py-[15px] px-[17px] size-[140px]">
             <div className="flex justify-between items-center">
               <p className="text-[12px] font-semibold text-[#0F172A]">연속 학습</p>
               <img src={ic_continuous_study} alt="" />
             </div>
-            <p className="text-[30px] font-extrabold text-[#0F172A]">4일</p>
+            <p className="text-[30px] font-extrabold text-[#0F172A]">
+              {summary?.streak != null ? `${summary.streak}일` : "0일"}
+            </p>
           </RoundedBlock>
+
           <RoundedBlock className="p-[17px] w-[296px] h-[140px]">
             <div className="flex justify-between mb-[8px]">
               <p className="text-[12px] font-semibold text-[#0F172A]">주간 학습시간 목표</p>
               <button className="text-[12px] text-[#13A4EC] cursor-pointer">수정</button>
             </div>
             <DummyProgressBar />
-            <p className="mt-[8px] text-[12px] text-[#0F172A]">5 / 5 시간</p>
+            <p className="mt-[8px] text-[12px] text-[#0F172A]">
+              {summary?.weekly_goal
+                ? `${summary.weekly_goal.current} / ${summary.weekly_goal.target} 시간`
+                : "0 / 0 시간"}
+            </p>
           </RoundedBlock>
         </div>
 
@@ -124,16 +210,16 @@ const StudentDashboard = () => {
               <button className="text-[14px] text-[#13A4EC] cursor-pointer">모두 펼치기</button>
             }
           >
-            <ProgressOfBookItem title="수학 교재" progress="75%" />
-            <ProgressOfBookItem title="수학 교재" progress="75%" />
-            <ProgressOfBookItem title="수학 교재" progress="75%" />
+            {(dashboard?.textbooks || []).map((tb) => (
+              <ProgressOfBookItem key={tb.id} title={tb.title} progress={`${tb.progress}%`} />
+            ))}
           </RoundedBlock>
           <RoundedBlock
             className="flex flex-col gap-[4px] p-[21px] w-[400px] h-[400px]"
             title="학습 캘린더"
           >
             <p className="text-[12px] text-[#64748B]">최근 7×5주 학습량</p>
-            <ColoredCalender list={list} />
+            <ColoredCalender list={calendarList} />
             <div className="flex items-center gap-[8px] pt-[8px]">
               <CalenderBlock className="size-[16px]" type={1} />
               <p className="text-[11px] text-[#64748B]">낮음</p>
