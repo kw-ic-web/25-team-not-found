@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import api from "../../api/api";
 import Modal from "@mui/material/Modal";
 import { twJoin } from "tailwind-merge";
+import { useNavigate } from "react-router-dom";
 
 const StudentMain = () => {
   const [data, setData] = useState(null);
@@ -44,6 +45,8 @@ const StudentMain = () => {
   const day = today.getDate();
   const dayOfWeek = today.toLocaleString("ko-KR", { weekday: "long" });
   const formattedDate = `${year}년 ${month}월 ${day}일 ${dayOfWeek}`;
+
+  const navigate = useNavigate();
 
   return (
     <main className="flex w-full h-full bg-[#F6F7F8]">
@@ -149,6 +152,7 @@ const StudentMain = () => {
                           title={textbook.title}
                           subject={textbook.subject}
                           term={textbook.term}
+                          textbookId={textbook.textbook_id}
                         />
                       </div>
                     ))}
@@ -199,7 +203,10 @@ const StudentMain = () => {
               className="w-[1048px] h-[190px]"
               title="나의 진행률 요약"
               rightElement={
-                <button className="text-[14px] text-[#13A4EC] font-semibold cursor-pointer">
+                <button
+                  className="text-[14px] text-[#13A4EC] font-semibold cursor-pointer"
+                  onClick={() => navigate("/student/dashboard")}
+                >
                   학습 대시보드 →
                 </button>
               }

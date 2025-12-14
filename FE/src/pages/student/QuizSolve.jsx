@@ -5,16 +5,23 @@ import QuizItem from "../../components/student/quiz/QuizItem";
 import ic_window_open from "../../assets/icons/student/main/quiz/ic_window_open.svg";
 import SelectItem from "../../components/student/quiz/SelectItem";
 import api from "../../api/api";
+import { useLocation } from "react-router-dom";
 
 const QuizSolve = () => {
   const [textbooks, setTextbooks] = useState(null);
 
+  const location = useLocation();
+  const { textbookId } = location.state || {};
+
   useEffect(() => {
     try {
       const fetchData = async () => {
-        const { data } = await api.get("/textbooks");
+        const { data } = await api.get("/textbooks/enrolled");
         setTextbooks(data);
-        if (data) {
+        const selectedCourse = data.find((textbook) => textbook.textbook_id === textbookId);
+        if (selectedCourse) {
+          setSelectedCourse(selectedCourse);
+        } else if (data) {
           setSelectedCourse(data[0]);
         }
       };
@@ -22,7 +29,7 @@ const QuizSolve = () => {
     } catch (error) {
       console.log(error);
     }
-  }, []);
+  }, [textbookId]);
 
   const [selectedCourse, setSelectedCourse] = useState(null);
 
