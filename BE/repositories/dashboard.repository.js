@@ -90,35 +90,61 @@ export const getScoreDistribution = async (userId) => {
 export const getTextbookProgress = async (userId) => {
   const query = `
     SELECT 
-        t.textbook_id,
-        t.title,
-        t.author_id,
-        (
-            SELECT COUNT(DISTINCT tp.page_id) 
-            FROM textbook_pages tp
-            JOIN textbook_versions tv ON tp.version_id = tv.version_id
-            WHERE tv.textbook_id = t.textbook_id AND tv.is_published = true
-        ) as total_pages,
-        (
-            SELECT COUNT(DISTINCT pr.page_id)
-            FROM page_reads pr
-            JOIN textbook_pages tp ON pr.page_id = tp.page_id
-            JOIN textbook_versions tv ON tp.version_id = tv.version_id
-            WHERE pr.user_id = $1 
-            AND tv.textbook_id = t.textbook_id
-        ) as read_pages
-    FROM enrollments e
-    JOIN textbooks t ON e.textbook_id = t.textbook_id
-    WHERE e.user_id = $1;
+      t.textbook_id,
+      t.title,
+      t.author_id,
+
+      -- published 버전 기준 전체 페이지 수
+      (
+        SELECT COUNT(DISTINCT tp.page_id) 
+        FROM public.textbook_pages tp
+        JOIN public.textbook_versions tv ON tp.version_id = tv.version_id
+        WHERE tv.textbook_id = t.textbook_id
+          AND tv.is_published = true
+      ) as total_pages,
+
+      -- published 버전 기준 사용자가 읽은 페이지 수
+      (
+        SELECT COUNT(DISTINCT pr.page_id)
+        FROM public.page_reads pr
+        JOIN public.textbook_pages tp ON pr.page_id = tp.page_id
+        JOIN public.textbook_versions tv ON tp.version_id = tv.version_id
+        WHERE pr.user_id = $1 
+          AND tv.textbook_id = t.textbook_id
+          AND tv.is_published = true
+      ) as read_pages,
+
+      -- 마지막 접근 시간
+      (
+        SELECT MAX(pr.last_read_at)
+        FROM public.page_reads pr
+        JOIN public.textbook_pages tp ON pr.page_id = tp.page_id
+        JOIN public.textbook_versions tv ON tp.version_id = tv.version_id
+        WHERE pr.user_id = $1
+          AND tv.textbook_id = t.textbook_id
+      ) as last_accessed
+
+    FROM public.enrollments e
+    JOIN public.textbooks t ON e.textbook_id = t.textbook_id
+    WHERE e.user_id = $1
+      AND e.role = 'student'
+    ORDER BY last_accessed DESC NULLS LAST, t.created_at DESC;
   `;
+
   const { rows } = await pool.query(query, [userId]);
 
-  return rows.map(row => ({
-    id: row.textbook_id,
-    title: row.title,
-    progress: row.total_pages > 0 ? Math.round((row.read_pages / row.total_pages) * 100) : 0,
-    last_accessed: row.last_accessed // Note: logic might be needed if not in select
-  }));
+  return rows.map((row) => {
+    const total = Number(row.total_pages) || 0;
+    const read = Number(row.read_pages) || 0;
+    const progress = total > 0 ? Math.round((read / total) * 100) : 0;
+
+    return {
+      id: row.textbook_id,
+      title: row.title,
+      progress,
+      last_accessed: row.last_accessed,
+    };
+  });
 };
 
 /**
