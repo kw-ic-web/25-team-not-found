@@ -210,10 +210,10 @@ const StudentDashboard = () => {
             </div>
 
             {remaining > 0 && (
-              <div className="pt-[6px] border-t border-[#E2E8F0]">
-                <p className="text-[12px] text-[#64748B]">
+              <div className="pt-[8px]">
+                <span className="inline-flex items-center px-[10px] py-[6px] rounded-full bg-[#F1F5F9] text-[12px] leading-[16px] text-[#64748B]">
                   외 {remaining}개의 교재가 더 있습니다.
-                </p>
+                </span>
               </div>
             )}
           </RoundedBlock>
