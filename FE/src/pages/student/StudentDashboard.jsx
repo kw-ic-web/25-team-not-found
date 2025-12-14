@@ -13,10 +13,6 @@ import ColoredCalender from "../../components/student/dashboard/calender/Colored
 import CalenderBlock from "../../components/student/dashboard/calender/CalenderBlock";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
-import Modal from "@mui/material/Modal";
-import { twJoin } from "tailwind-merge";
-import SearchBookItem from "../../components/student/main/SearchBookItem";
-import { ic_check } from "../../assets/icons/student/main/recent_notice";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -25,8 +21,6 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [generalError, setGeneralError] = useState("");
   const [expanded, setExpanded] = useState(false);
-  const [openTextbookSelectModal, setOpenTextbookSelectModal] = useState(false);
-  const [selectedTextbookId, setSelectedTextbookId] = useState(null);
 
   useEffect(() => {
     const run = async () => {
@@ -76,6 +70,7 @@ const StudentDashboard = () => {
 
       const level = map.get(key) ?? 0;
       const type = level <= 0 ? 0 : level === 1 ? 1 : level === 2 ? 2 : 3;
+
       list.push(type);
     }
     return list;
@@ -84,22 +79,6 @@ const StudentDashboard = () => {
   const textbooks = dashboard?.textbooks || [];
   const canToggle = textbooks.length > 3;
   const visibleTextbooks = expanded ? textbooks : textbooks.slice(0, 3);
-
-  const openSelectModal = (prefillId = null) => {
-    setSelectedTextbookId(prefillId);
-    setOpenTextbookSelectModal(true);
-  };
-
-  const closeSelectModal = () => {
-    setOpenTextbookSelectModal(false);
-    setSelectedTextbookId(null);
-  };
-
-  const goToUnits = () => {
-    if (!selectedTextbookId) return;
-    closeSelectModal();
-    navigate(`/student/textbooks/${selectedTextbookId}`);
-  };
 
   return (
     <main className="flex flex-col items-center w-full min-h-screen bg-[#F6F7F8]">
@@ -135,12 +114,15 @@ const StudentDashboard = () => {
             <button className="text-[16px] text-[#0F172A] cursor-pointer">국어</button>
           </div>
 
-          <p className="text-[12px] text-[#64748B]">학습 시간, 진도, 퀴즈 성과를 한눈에 확인하세요.</p>
+          <p className="text-[12px] text-[#64748B]">
+            학습 시간, 진도, 퀴즈 성과를 한눈에 확인하세요.
+          </p>
         </div>
       </header>
-
       <section className="flex flex-col gap-[32px] p-[24px] w-[1280px]">
-        {generalError && <p className="text-[12px] leading-4 text-[#DC2626]">{generalError}</p>}
+        {generalError && (
+          <p className="text-[12px] leading-4 text-[#DC2626]">{generalError}</p>
+        )}
         {loading && <p className="text-[12px] text-[#64748B]">불러오는 중...</p>}
 
         <div className="flex gap-[16px]">
@@ -201,23 +183,16 @@ const StudentDashboard = () => {
             ].join(" ")}
             title="교재별 진도"
             rightElement={
-              <div className="flex gap-[16px] items-center">
+              canToggle ? (
                 <button
                   className="text-[14px] text-[#13A4EC] cursor-pointer"
-                  onClick={() => openSelectModal(null)}
+                  onClick={() => setExpanded((v) => !v)}
                 >
-                  단원 보기
+                  {expanded ? "접기" : "모두 펼치기"}
                 </button>
-
-                {canToggle && (
-                  <button
-                    className="text-[14px] text-[#13A4EC] cursor-pointer"
-                    onClick={() => setExpanded((v) => !v)}
-                  >
-                    {expanded ? "접기" : "모두 펼치기"}
-                  </button>
-                )}
-              </div>
+              ) : (
+                <span />
+              )
             }
           >
             <div
@@ -229,11 +204,7 @@ const StudentDashboard = () => {
             >
               {visibleTextbooks.map((tb) => (
                 <div key={tb.id} className="w-full">
-                  <ProgressOfBookItem
-                    title={tb.title}
-                    progress={`${tb.progress}%`}
-                    onClickUnits={() => openSelectModal(tb.id)}
-                  />
+                  <ProgressOfBookItem title={tb.title} progress={`${tb.progress}%`} />
                 </div>
               ))}
 
@@ -242,8 +213,10 @@ const StudentDashboard = () => {
               )}
             </div>
           </RoundedBlock>
-
-          <RoundedBlock className="flex flex-col gap-[4px] p-[21px] w-[400px] h-[400px]" title="학습 캘린더">
+          <RoundedBlock
+            className="flex flex-col gap-[4px] p-[21px] w-[400px] h-[400px]"
+            title="학습 캘린더"
+          >
             <p className="text-[12px] text-[#64748B]">최근 7×5주 학습량</p>
             <ColoredCalender list={calendarList} />
             <div className="flex items-center gap-[8px] pt-[8px]">
@@ -257,69 +230,6 @@ const StudentDashboard = () => {
           </RoundedBlock>
         </div>
       </section>
-
-      <Modal
-        open={openTextbookSelectModal}
-        onClose={closeSelectModal}
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
-      >
-        <div className="flex flex-col w-[1200px] max-h-[800px] bg-white rounded-[16px] overflow-hidden">
-          <div className="flex justify-between items-center p-[24px] border-b border-[#E2E8F0]">
-            <h2 className="text-[24px] font-bold text-[#0F172A]">교재 선택</h2>
-            <button onClick={closeSelectModal} className="text-[20px] text-[#64748B] hover:text-[#0F172A]">
-              ×
-            </button>
-          </div>
-
-          <div className="grid grid-cols-3 gap-[20px] p-[24px] overflow-y-auto">
-            {textbooks.map((tb) => (
-              <div
-                key={tb.id}
-                onClick={() => setSelectedTextbookId(tb.id)}
-                className={twJoin(
-                  "cursor-pointer rounded-[16px] border-2 transition-all relative",
-                  selectedTextbookId === tb.id
-                    ? "border-[#13A4EC] bg-[#F0F9FF]"
-                    : "border-[#E2E8F0] hover:border-[#CBD5E1]"
-                )}
-              >
-                {selectedTextbookId === tb.id && (
-                  <div className="absolute top-[12px] right-[12px] w-[24px] h-[24px] bg-[#13A4EC] rounded-full flex items-center justify-center">
-                    <img src={ic_check} alt="선택됨" className="w-[16px] h-[16px]" />
-                  </div>
-                )}
-
-                <SearchBookItem
-                  title={tb.title}
-                  subject={tb.subject || ""}
-                  term={tb.term || ""}
-                />
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-end gap-[12px] p-[24px] border-t border-[#E2E8F0]">
-            <button
-              onClick={closeSelectModal}
-              className="px-[24px] py-[12px] rounded-[8px] border border-[#CBD5E1] text-[14px] font-semibold text-[#475569] hover:bg-[#F1F5F9]"
-            >
-              취소
-            </button>
-            <button
-              onClick={goToUnits}
-              disabled={!selectedTextbookId}
-              className={twJoin(
-                "px-[24px] py-[12px] rounded-[8px] text-[14px] font-semibold text-white",
-                selectedTextbookId
-                  ? "bg-[#13A4EC] hover:bg-[#0D8BC7] cursor-pointer"
-                  : "bg-[#CBD5E1] cursor-not-allowed"
-              )}
-            >
-              확인
-            </button>
-          </div>
-        </div>
-      </Modal>
     </main>
   );
 };
