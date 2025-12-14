@@ -14,7 +14,7 @@ import CalenderBlock from "../../components/student/dashboard/calender/CalenderB
 import UpcomingClassItem from "../../components/student/dashboard/UpcomingClassItem";
 import RecentQuizTable from "../../components/student/dashboard/RecentQuizTable";
 import { useNavigate } from "react-router-dom";
-import api from "../api/api";
+import { api } from "../../api/api";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
