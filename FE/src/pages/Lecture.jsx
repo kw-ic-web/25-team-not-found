@@ -4,8 +4,8 @@ import { useLocation, useSearchParams } from "react-router-dom";
 import { getWebRTCSocket } from "../lib/webrtcClient";
 import ic_logo from "../assets/icons/ic_logo.svg";
 
-const BASE = import.meta.env.VITE_API_BASE_URL;
-
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://team10-api.kwweb.org";
 
 function getAccessToken() {
   try {
@@ -26,7 +26,7 @@ function authHeaders(includeJson = false) {
 function extractTextFromNode(node) {
   if (node == null) return "";
 
-  // 문자열
+  // 문자열/숫자
   if (typeof node === "string" || typeof node === "number") {
     return String(node);
   }
@@ -40,14 +40,25 @@ function extractTextFromNode(node) {
   if (typeof node === "object") {
     let result = "";
 
-    if (typeof node.text !== "undefined") {
-      result += extractTextFromNode(node.text);
+    // 1) props 안에 텍스트가 들어 있는 경우
+    if (node.props) {
+      result += extractTextFromNode(node.props);
     }
-    if (typeof node.content !== "undefined") {
+
+    // 2) 에디터가 페이지 내용을 blocks 배열 안에 넣는 경우
+    if ("blocks" in node) {
+      result += extractTextFromNode(node.blocks);
+    }
+
+    // 3) 바로 content / children / text가 있는 경우
+    if ("content" in node) {
       result += extractTextFromNode(node.content);
     }
-    if (typeof node.children !== "undefined") {
+    if ("children" in node) {
       result += extractTextFromNode(node.children);
+    }
+    if ("text" in node) {
+      result += extractTextFromNode(node.text);
     }
 
     return result;
@@ -56,30 +67,49 @@ function extractTextFromNode(node) {
   return "";
 }
 
+
+
 function normalizePageContent(raw) {
   if (raw == null) return "";
-  if (typeof raw === "string" || typeof raw === "number") {
-    return String(raw);
-  }
 
   try {
-    const extracted = extractTextFromNode(raw);
-    if (extracted && extracted.trim().length > 0) {
-      return extracted;
+    let parsed = raw;
+
+    // content가 JSON 문자열이면 파싱 먼저 시도
+    if (typeof raw === "string") {
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        parsed = raw; // 그냥 문자열이면 그대로 둠
+      }
     }
-    // JSON 문자열
-    return JSON.stringify(raw);
+
+    const text = extractTextFromNode(parsed);
+
+    if (text && text.trim().length > 0) {
+      return text;
+    }
+
+    // 그래도 없으면 문자열/숫자는 그대로 반환
+    if (typeof raw === "string" || typeof raw === "number") {
+      return String(raw);
+    }
+
+    // 객체인데 텍스트가 전혀 없으면 그냥 빈 문자열
+    return "";
   } catch {
+    if (typeof raw === "string" || typeof raw === "number") {
+      return String(raw);
+    }
     return "";
   }
 }
-
 // API 
 
 // 내 교재 목록
 async function fetchMyTextbooks() {
-  if (!BASE) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
-  const res = await fetch(`${BASE}/textbooks/mine`, {
+  if (!BASE_URL) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
+  const res = await fetch(`${BASE_URL}/textbooks/mine`, {
     method: "GET",
     headers: authHeaders(),
   });
@@ -89,9 +119,9 @@ async function fetchMyTextbooks() {
 
 // 특정 교재 버전의 페이지들
 async function fetchTextbookPages(textbookId, version) {
-  if (!BASE) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
+  if (!BASE_URL) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
   const res = await fetch(
-    `${BASE}/textbooks/${textbookId}/versions/${version}/pages`,
+    `${BASE_URL}/textbooks/${textbookId}/versions/${version}/pages`,
     {
       method: "GET",
       headers: authHeaders(),
@@ -103,8 +133,8 @@ async function fetchTextbookPages(textbookId, version) {
 
 // 선생님 수업 세션 생성
 async function createLectureSession(textbookId) {
-  if (!BASE) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
-  const res = await fetch(`${BASE}/lectures/session`, {
+  if (!BASE_URL) throw new Error("VITE_API_BASE_URL이 설정되지 않았습니다.");
+  const res = await fetch(`${BASE_URL}/lectures/session`, {
     method: "POST",
     headers: authHeaders(true),
     body: JSON.stringify({ textbookId }),
@@ -311,7 +341,7 @@ export default function Lecture() {
     return () => {
       cancelled = true;
     };
-  }, [location.state]);
+  }, [location.key, location.state]);
 
   // ───────────────────────
   // 선택된 교재/버전에 따라 페이지 로딩

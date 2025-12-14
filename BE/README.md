@@ -222,6 +222,33 @@
     }
     ```
 
+# 학생 교재 목록
+
+### GET /textbooks/enrolled
+
+- **설명**: 현재 로그인한 사용자가 학생(student) 역할로 수강 등록한 교재 목록을 조회합니다.
+- **인증**: ✅ (Bearer)
+- **응답 (200)**
+    ```json
+    [
+        {
+            "textbook_id": "1111-aaaa",
+            "title": "웹서비스설계",
+            "created_at": "2025-11-28T11:11:11.000Z",
+            "latest_version": 3,
+            "author_id": 3,
+            "author_nickname": "hyewon"
+        },
+        {
+            "textbook_id": "2222-bbbb",
+            "title": "자료구조",
+            "created_at": "2025-11-20T09:00:00.000Z",
+            "latest_version": 2,
+            "author_id": 7,
+            "author_nickname": "teacherA"
+        }
+    ]
+    ```
 ---
 
 # Learn (학습)
@@ -383,6 +410,35 @@
     }
     ```
 
+---
+
+# 교재 목록 조회
+
+### GET /textbooks
+
+- **설명**: 모든 교재 목록을 조회합니다.(최신 생성순)
+- **인증**: ✅ (Bearer)
+- **응답 (200)**
+    ```json
+    [
+        {
+            "textbook_id": "1111-aaaa",
+            "title": "웹서비스설계",
+            "created_at": "2025-11-28T11:11:11.000Z",
+            "latest_version": 3,
+            "author_id": 3,
+            "author_nickname": "hyewon"
+        },
+        {
+            "textbook_id": "2222-bbbb",
+            "title": "자료구조",
+            "created_at": "2025-11-20T09:00:00.000Z",
+            "latest_version": 2,
+            "author_id": 7,
+            "author_nickname": "teacherA"
+        }
+    ]
+    ```
 ---
 
 # Teacher (교사 기능)

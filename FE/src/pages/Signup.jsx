@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://223.194.46.67:21090";
+  import.meta.env.VITE_API_BASE_URL || "https://team10-api.kwweb.org";
 
 export default function Signup() {
   const navigate = useNavigate();

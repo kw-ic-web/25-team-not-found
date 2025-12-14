@@ -1,10 +1,28 @@
+import { useNavigate } from "react-router-dom";
 import ic_logo from "../../assets/icons/ic_logo.svg";
 import { Home, Book, Classroom, Quiz, Dashboard } from "../icons";
 import SidebarBtn from "./SidebarBtn";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Dialog from "@mui/material/Dialog";
+import api from "../../api/api";
+import SearchBookItem from "../student/main/SearchBookItem";
 
 const StudentSidebar = () => {
   const [activatedBtn, setActivatedBtn] = useState(0);
+
+  const navigate = useNavigate();
+
+  const [enterClassOpen, setEnterClassOpen] = useState(false);
+  const [enrolledTextbooks, setEnrolledTextbooks] = useState(null);
+
+  useEffect(() => {
+    if (enterClassOpen) {
+      (async () => {
+        const { data } = await api.get("/textbooks/enrolled");
+        setEnrolledTextbooks(data);
+      })();
+    }
+  }, [enterClassOpen]);
 
   return (
     <aside className="w-[287px] h-screen bg-white border-r border-[#E2E8F0]">
@@ -16,35 +34,70 @@ const StudentSidebar = () => {
         <SidebarBtn
           Icon={Home}
           isActivated={activatedBtn === 0}
-          onClick={() => setActivatedBtn(0)}
+          onClick={() => {
+            setActivatedBtn(0);
+            navigate("/student");
+          }}
         >
           학생 메인
         </SidebarBtn>
-        <SidebarBtn
-          Icon={Book}
-          isActivated={activatedBtn === 1}
-          onClick={() => setActivatedBtn(1)}
-        >
+        {/* <SidebarBtn Icon={Book} isActivated={activatedBtn === 1} onClick={() => {
+          setActivatedBtn(1);
+          navigate("/student/book");
+        }}>
           내 교재
-        </SidebarBtn>
+        </SidebarBtn> */}
         <SidebarBtn
           Icon={Classroom}
           isActivated={activatedBtn === 2}
-          onClick={() => setActivatedBtn(2)}
+          onClick={() => {
+            setActivatedBtn(2);
+            setEnterClassOpen(true);
+            // navigate("/lecture?role=student");
+          }}
         >
           수업참여
         </SidebarBtn>
+        <Dialog open={enterClassOpen} onClose={() => setEnterClassOpen(false)}>
+          {enrolledTextbooks &&
+            enrolledTextbooks.map((enrolledTextbook) => (
+              <div
+                key={enrolledTextbook.textbook_id}
+                className="cursor-pointer"
+                onClick={() => {
+                  navigate("/lecture?role=student", {
+                    state: {
+                      textbookId: enrolledTextbook.textbook_id,
+                      title: enrolledTextbook.title,
+                    },
+                  });
+                }}
+              >
+                <SearchBookItem
+                  title={enrolledTextbook.title}
+                  subject={enrolledTextbook.subject || ""}
+                  term={enrolledTextbook.term || ""}
+                />
+              </div>
+            ))}
+        </Dialog>
         <SidebarBtn
           Icon={Quiz}
           isActivated={activatedBtn === 3}
-          onClick={() => setActivatedBtn(3)}
+          onClick={() => {
+            setActivatedBtn(3);
+            navigate("/student/quiz");
+          }}
         >
           퀴즈풀이
         </SidebarBtn>
         <SidebarBtn
           Icon={Dashboard}
           isActivated={activatedBtn === 4}
-          onClick={() => setActivatedBtn(4)}
+          onClick={() => {
+            setActivatedBtn(4);
+            navigate("/student/dashboard");
+          }}
         >
           학습 대시보드
         </SidebarBtn>

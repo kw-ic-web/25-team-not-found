@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import TextbookSelectModal from "../components/teacher/TextbookSelectModal";
 import ic_logo from "../assets/icons/ic_logo.svg";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://team10-api.kwweb.org";
 
 export default function TeacherLecture() {
   const navigate = useNavigate();
@@ -17,18 +18,20 @@ export default function TeacherLecture() {
   useEffect(() => {
     async function fetchMyTextbooks() {
       try {
-        if (!API_BASE_URL) {
+        if (!BASE_URL) {
           setTextbookStatus("VITE_API_BASE_URL이 설정되지 않았습니다.");
           return;
         }
 
         const token = localStorage.getItem("access_token");
         if (!token) {
-          setTextbookStatus("로그인 정보(access_token)가 없어 교재 목록을 불러올 수 없습니다.");
+          setTextbookStatus(
+            "로그인 정보(access_token)가 없어 교재 목록을 불러올 수 없습니다."
+          );
           return;
         }
 
-        const res = await fetch(`${API_BASE_URL}/textbooks/mine`, {
+        const res = await fetch(`${BASE_URL}/textbooks/mine`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -39,21 +42,41 @@ export default function TeacherLecture() {
         console.log("[TeacherLecture] /textbooks/mine status:", res.status);
 
         if (!res.ok) {
-          setTextbookStatus(`교재 목록 API 호출 실패 (status: ${res.status})`);
+          setTextbookStatus(`교재 목록 불러오기 실패 (status: ${res.status})`);
           return;
         }
 
-        const data = await res.json(); // [{ textbook_id, title, latest_version, ... }]
-        setMyTextbooks(data);
+        const raw = await res.json();
+        console.log("[TeacherLecture] /textbooks/mine raw:", raw);
 
-        if (!data.length) {
-          setTextbookStatus("생성된 교재가 없습니다. 먼저 교재를 하나 이상 생성해 주세요.");
+        // 배열 / { data: [...] } 모두 대응
+        const list = Array.isArray(raw) ? raw : raw?.data ?? [];
+
+        // 모달에서 사용하기 편하게 필드 정리
+        const normalized = list.map((t) => ({
+          ...t,
+          // 모달에서 공통으로 쓰는 키들
+          id: t.textbook_id ?? t.id,
+          subject: t.subject ?? "과목 미지정",
+          meta: t.created_at
+            ? new Date(t.created_at).toLocaleDateString("ko-KR") + " 생성"
+            : "",
+        }));
+
+        console.log("[TeacherLecture] normalized textbooks:", normalized);
+
+        setMyTextbooks(normalized);
+
+        if (!normalized.length) {
+          setTextbookStatus(
+            "생성된 교재가 없습니다. 먼저 교재를 하나 이상 생성해 주세요."
+          );
         } else {
-          setTextbookStatus(`내 교재 ${data.length}개 로드 완료`);
+          setTextbookStatus(`내 교재 ${normalized.length}개 로딩 완료`);
         }
       } catch (err) {
         console.error("[TeacherLecture] 교재 목록 불러오기 오류:", err);
-        setTextbookStatus("교재 목록 API 호출 중 오류가 발생했습니다.");
+        setTextbookStatus("교재 목록 불러오기 중 오류가 발생했습니다.");
       }
     }
 
@@ -67,7 +90,7 @@ export default function TeacherLecture() {
         <div className="mx-auto max-w-[1746px] h-full px-6 flex items-center justify-between">
           {/* 왼쪽: 로고 + 상태 */}
           <div className="flex items-center gap-4">
-          <img src={ic_logo} alt="EduNote" className="w-9 h-9 shrink-0" />
+            <img src={ic_logo} alt="EduNote" className="w-9 h-9 shrink-0" />
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 truncate">
               EduNote · 강의 시작
             </h1>
@@ -83,8 +106,10 @@ export default function TeacherLecture() {
 
           {/*  대시보드 버튼 + 프로필 동그라미 */}
           <div className="flex items-center gap-3">
-            <button className="h-10 px-4 rounded-lg border border-slate-300 bg-white text-[14px] text-slate-900"
-            onClick={() => navigate("/teacher")}>
+            <button
+              className="h-10 px-4 rounded-lg border border-slate-300 bg-white text-[14px] text-slate-900"
+              onClick={() => navigate("/teacher")}
+            >
               대시보드
             </button>
             <div className="w-10 h-10 rounded-full bg-slate-200" />
@@ -128,7 +153,9 @@ export default function TeacherLecture() {
                 onClick={() => setIsTextbookModalOpen(true)}
                 className="inline-flex items-center gap-2 px-5 h-11 rounded-lg bg-[#13A4EC] text-white text-[16px] font-bold shadow-sm"
               >
-                <span className="text-lg font-bold leading-none text-white">+</span>
+                <span className="text-lg font-bold leading-none text-white">
+                  +
+                </span>
                 <span>교재 선택하기</span>
               </button>
             </div>

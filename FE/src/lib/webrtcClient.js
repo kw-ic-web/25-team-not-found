@@ -1,11 +1,11 @@
 import { io } from "socket.io-client";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://team10-webrtc.kwweb.org";
+
 const SIGNALING_URL = import.meta.env.VITE_SIGNALING_URL;
 
 if (!SIGNALING_URL) {
-  console.warn(
-    "[webrtcClient] VITE_SIGNALING_URL 이 .env 에 설정되어 있지 않습니다."
-  );
+  console.warn("[webrtcClient] VITE_SIGNALING_URL 이 .env 에 설정되어 있지 않습니다.");
 }
 
 // socket 인스턴스 하나만 재사용
