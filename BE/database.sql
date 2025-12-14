@@ -388,3 +388,17 @@ CREATE TABLE page_reads (
   CONSTRAINT fk_page_reads_page FOREIGN KEY (page_id) REFERENCES textbook_pages(page_id) ON DELETE CASCADE,
   UNIQUE (user_id, page_id)
 );
+
+-- ============================================
+-- Dashboard
+-- ============================================
+ALTER TABLE users
+  ADD COLUMN weekly_goal_hours INTEGER NOT NULL DEFAULT 5;
+
+COMMENT ON COLUMN users.weekly_goal_hours IS '사용자 주간 학습시간 목표(시간)';
+
+CREATE INDEX IF NOT EXISTS idx_page_reads_user_last_read_at
+  ON page_reads(user_id, last_read_at);
+
+CREATE INDEX IF NOT EXISTS idx_page_reads_page_id
+  ON page_reads(page_id);
