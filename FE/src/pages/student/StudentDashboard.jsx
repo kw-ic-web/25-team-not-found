@@ -11,8 +11,6 @@ import DummyProgressBar from "../../components/DummyProgressBar";
 import ProgressOfBookItem from "../../components/student/dashboard/ProgressOfBookItem";
 import ColoredCalender from "../../components/student/dashboard/calender/ColoredCalender";
 import CalenderBlock from "../../components/student/dashboard/calender/CalenderBlock";
-import UpcomingClassItem from "../../components/student/dashboard/UpcomingClassItem";
-import RecentQuizTable from "../../components/student/dashboard/RecentQuizTable";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 
@@ -80,14 +78,6 @@ const StudentDashboard = () => {
     }
     return list;
   }, [dashboard]);
-
-  // 최근 퀴즈는 API 응답에 없어서 기존 더미 유지(추후 백엔드 확장 시 교체)
-  const recentQuizzes = [
-    { title: "퀴즈 12", subject: "수학 교재", score: "92%", status: "통과" },
-    { title: "퀴즈 11", subject: "과학 교재", score: "81%", status: "통과" },
-    { title: "퀴즈 10", subject: "국어 교재", score: "73%", status: "보통" },
-    { title: "퀴즈 9", subject: "수학 교재", score: "58%", status: "재도전" },
-  ];
 
   return (
     <main className="flex flex-col items-center w-full min-h-screen bg-[#F6F7F8]">
@@ -227,43 +217,6 @@ const StudentDashboard = () => {
               <CalenderBlock className="size-[16px]" type={3} />
               <p className="text-[11px] text-[#64748B]">높음</p>
             </div>
-          </RoundedBlock>
-        </div>
-
-        <div className="flex justify-between">
-          <RoundedBlock
-            className="flex flex-col gap-[12px] p-[21px] w-[608px] h-[276px]"
-            title="다가오는 수업"
-          >
-            <UpcomingClassItem
-              title="수학 실전 풀이"
-              subtitle="수학 교재"
-              runtime="45분"
-              time="내일 19:00"
-            />
-            <div className="h-[1px] bg-[#E2E8F0]" />
-            <UpcomingClassItem
-              title="수학 실전 풀이"
-              subtitle="수학 교재"
-              runtime="45분"
-              time="내일 19:00"
-            />
-            <div className="h-[1px] bg-[#E2E8F0]" />
-            <UpcomingClassItem
-              title="수학 실전 풀이"
-              subtitle="수학 교재"
-              runtime="45분"
-              time="내일 19:00"
-            />
-          </RoundedBlock>
-          <RoundedBlock
-            className="flex flex-col gap-[12px] p-[21px] w-[608px] h-[276px]"
-            title="최근 퀴즈"
-            rightElement={
-              <button className="text-[14px] text-[#13A4EC] cursor-pointer">퀴즈 보기</button>
-            }
-          >
-            <RecentQuizTable quizzes={recentQuizzes} />
           </RoundedBlock>
         </div>
       </section>
