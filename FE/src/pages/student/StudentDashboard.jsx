@@ -1,5 +1,3 @@
-console.log("StudentDashboard NEW BUILD LOADED");
-
 import { useEffect, useMemo, useState } from "react";
 import ic_back from "../../assets/icons/student/ic_back.svg";
 import ic_download_black from "../../assets/icons/student/dashboard/ic_download_black.svg";
