@@ -78,7 +78,10 @@ const StudentDashboard = () => {
   }, [dashboard]);
 
   const textbooks = dashboard?.textbooks || [];
-  const previewTextbooks = textbooks.slice(0, 3);
+  const previewCount = 2;
+  const previewTextbooks = textbooks.slice(0, previewCount);
+  const remaining = Math.max(0, textbooks.length - previewCount);
+  const bottomCardHeight = "h-[300px]";
 
   return (
     <main className="flex flex-col items-center w-full min-h-screen bg-[#F6F7F8]">
@@ -170,17 +173,19 @@ const StudentDashboard = () => {
               </p>
             }
           />
-          <RoundedBlock className="flex flex-col gap-[4px] p-[21px] w-[608px] h-[282px]" title="퀴즈 점수 분포">
+          <RoundedBlock
+            className="flex flex-col gap-[4px] p-[21px] w-[608px] h-[282px]"
+            title="퀴즈 점수 분포"
+          >
             <p className="text-[12px] text-[#64748B]">최근 기간 응시 퀴즈(구간화)</p>
           </RoundedBlock>
         </div>
-
         <div className="flex justify-between">
           <RoundedBlock
-            className="flex flex-col gap-[12px] p-[21px] w-[816px] h-[400px]"
+            className={`flex flex-col p-[21px] w-[816px] ${bottomCardHeight}`}
             title="교재별 진도"
             rightElement={
-              textbooks.length > 0 ? (
+              textbooks.length > 0 && remaining > 0 ? (
                 <button
                   className="text-[14px] text-[#13A4EC] cursor-pointer"
                   onClick={() => setOpenAllTextbooksModal(true)}
@@ -192,26 +197,35 @@ const StudentDashboard = () => {
               )
             }
           >
-            {previewTextbooks.map((tb) => (
-              <div key={tb.id} className="w-full">
-                <ProgressOfBookItem title={tb.title} progress={`${tb.progress}%`} />
+            <div className="flex-1 flex flex-col gap-[12px] overflow-hidden">
+              {previewTextbooks.map((tb) => (
+                <div key={tb.id} className="w-full">
+                  <ProgressOfBookItem title={tb.title} progress={`${tb.progress}%`} />
+                </div>
+              ))}
+
+              {!loading && !generalError && textbooks.length === 0 && (
+                <p className="text-[12px] text-[#64748B]">수강 중인 교재가 없습니다.</p>
+              )}
+            </div>
+
+            {remaining > 0 && (
+              <div className="pt-[10px] border-t border-[#E2E8F0]">
+                <p className="text-[12px] text-[#64748B]">
+                  외 {remaining}개의 교재가 더 있습니다.
+                </p>
               </div>
-            ))}
-
-            {!loading && !generalError && textbooks.length === 0 && (
-              <p className="text-[12px] text-[#64748B]">수강 중인 교재가 없습니다.</p>
-            )}
-
-            {textbooks.length > 3 && (
-              <p className="text-[12px] text-[#64748B]">
-                외 {textbooks.length - 3}개의 교재가 더 있습니다.
-              </p>
             )}
           </RoundedBlock>
 
-          <RoundedBlock className="flex flex-col gap-[4px] p-[21px] w-[400px] h-[400px]" title="학습 캘린더">
+          <RoundedBlock
+            className={`flex flex-col gap-[4px] p-[21px] w-[400px] ${bottomCardHeight}`}
+            title="학습 캘린더"
+          >
             <p className="text-[12px] text-[#64748B]">최근 7×5주 학습량</p>
-            <ColoredCalender list={calendarList} />
+            <div className="flex-1 overflow-hidden">
+              <ColoredCalender list={calendarList} />
+            </div>
             <div className="flex items-center gap-[8px] pt-[8px]">
               <CalenderBlock className="size-[16px]" type={1} />
               <p className="text-[11px] text-[#64748B]">낮음</p>
