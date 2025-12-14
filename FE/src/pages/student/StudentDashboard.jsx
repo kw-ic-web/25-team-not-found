@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from "react"; // ✅ 추가
+console.log("StudentDashboard NEW BUILD LOADED");
+
+import { useEffect, useMemo, useState } from "react";
 import ic_back from "../../assets/icons/student/ic_back.svg";
 import ic_download_black from "../../assets/icons/student/dashboard/ic_download_black.svg";
 import ic_calender from "../../assets/icons/student/dashboard/ic_calender.svg";
