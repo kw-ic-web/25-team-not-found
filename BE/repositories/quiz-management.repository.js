@@ -32,7 +32,7 @@ export const createQuiz = async (quizData, userId) => {
 
     const pageQuery = await client.query(
       // 논리적 page_id 조회 - 주의: 이후 p.original_page_id는 alias로 page_id를 가짐
-      `SELECT p.page_id AS page_id
+      `SELECT p.original_page_id AS page_id
        FROM public.textbook_pages p
        JOIN public.textbook_versions v ON p.version_id=v.version_id
        WHERE v.textbook_id=$1 AND v.version=$2 AND p.page_number=$3`,
