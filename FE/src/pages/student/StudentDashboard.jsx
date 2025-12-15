@@ -12,6 +12,7 @@ import ProgressOfBookItem from "../../components/student/dashboard/ProgressOfBoo
 import ColoredCalender from "../../components/student/dashboard/calender/ColoredCalender";
 import CalenderBlock from "../../components/student/dashboard/calender/CalenderBlock";
 import QuizScoreDistribution from "../../components/student/dashboard/QuizScoreDistribution";
+import WeeklyStudyTrend from "../../components/student/dashboard/WeeklyStudyTrend";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import Modal from "@mui/material/Modal";
@@ -168,7 +169,11 @@ const StudentDashboard = () => {
                 <span className="text-[#64748B]">지난주 대비</span>
               </p>
             }
-          />
+          >
+            <div className="mt-[8px] h-[200px]">
+              <WeeklyStudyTrend apiWeeklyActivity={dashboard?.charts?.weekly_activity} />
+            </div>
+          </RoundedBlock>
           <RoundedBlock
             className="flex flex-col gap-[4px] p-[21px] w-[608px] h-[282px]"
             title="퀴즈 점수 분포"
