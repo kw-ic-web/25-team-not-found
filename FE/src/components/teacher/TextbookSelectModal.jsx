@@ -75,7 +75,7 @@ export default function TextbookSelectModal({
     console.log("[TextbookSelectModal] 선택 교재 payload:", payload);
 
     onConfirm?.(payload);
-    navigate("/lecture", { state: payload });
+    navigate("/lecture?role=teacher", { state: payload });
   };
 
   return (
@@ -87,7 +87,7 @@ export default function TextbookSelectModal({
               수업에 사용할 교재 선택
             </h3>
             <p className="text-[14px] leading-[20px] text-slate-600">
-              오늘 수업에서 사용할 교재를 선택하면, 해당 교재가 왼쪽 화면에
+              오늘 수업에서 사용할 교재를 선택하면, 해당 교재가 화면에
               로드됩니다.
             </p>
           </div>
@@ -103,27 +103,8 @@ export default function TextbookSelectModal({
 
         <div className="mt-5 flex items-center gap-3">
           <div className="relative flex-1">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded bg-slate-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-[41px] rounded-lg border border-slate-300 pl-9 pr-3 text-[16px] placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
-              placeholder="교재 검색 (제목, 과목 등)"
-            />
           </div>
 
-          <div className="relative w-[144px] h-[38px]">
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="w-full h-full rounded-lg border border-slate-300 bg-white px-3 pr-8 text-[14px] text-slate-800 appearance-none outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
-            >
-              <option value="recent">최근 사용 순</option>
-              <option value="title">제목 순</option>
-            </select>
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border border-slate-500 border-l-0 border-t-0 rotate-45" />
-          </div>
         </div>
 
         <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
