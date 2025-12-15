@@ -20,7 +20,7 @@ const ProgressOfBookItem = ({ title, progress, onOpen }) => {
         type="button"
         onClick={onOpen}
         className={twMerge(
-          "text-[14px] text-[#13A4EC] font-semibold cursor-pointer",
+          "inline-flex items-center whitespace-nowrap text-[14px] text-[#13A4EC] font-semibold cursor-pointer",
           "hover:underline"
         )}
       >
