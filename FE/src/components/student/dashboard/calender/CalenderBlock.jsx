@@ -8,9 +8,7 @@ import { twMerge } from "tailwind-merge";
  */
 const CalenderBlock = ({ className, type }) => {
   let color = "";
-  if (type === 0) {
-    color = "bg-white";
-  } else if (type === 1) {
+  if (type === 0 || type === 1) {
     color = "bg-[#E2E8F0]";
   } else if (type === 2) {
     color = "bg-[#13A4EC]/40";
@@ -23,5 +21,4 @@ const CalenderBlock = ({ className, type }) => {
     ></div>
   );
 };
-
 export default CalenderBlock;
