@@ -196,7 +196,7 @@ const StudentDashboard = () => {
         </div>
         <div className="flex justify-between">
           <RoundedBlock
-            className="flex flex-col gap-[12px] p-[21px] pb-[20px] w-[816px] h-[300px]"
+            className="flex flex-col gap-[12px] p-[21px] pb-[20px] w-[816px] h-[320px]"
             title="교재별 진도"
             rightElement={
               textbooks.length > 0 ? (
@@ -229,14 +229,14 @@ const StudentDashboard = () => {
               </div>
               {extraCount > 0 && (
                 <div className="mt-auto">
-                  <span className="inline-flex items-center px-[10px] py-[6px] rounded-full bg-[#F1F5F9] text-[12px] text-[#475569]">
+                  <span className="inline-flex items-center px-[10px] py-[6px] text-[12px] text-[#475569]">
                     외 {extraCount}개의 교재가 더 있습니다.
                   </span>
                 </div>
               )}
             </div>
           </RoundedBlock>
-          
+
           <RoundedBlock className="flex flex-col gap-[4px] p-[21px] w-[400px] h-[300px]" title="학습 캘린더">
             <p className="text-[12px] text-[#64748B]">최근 7×5주 학습량</p>
             <div className="flex-1 flex items-center">
