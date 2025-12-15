@@ -29,7 +29,7 @@ export default function WeeklyGoalEditModal({ open, onClose, api, currentTarget,
     const n = Number(value);
 
     if (!Number.isFinite(n) || !Number.isInteger(n)) {
-      setError("목표 시간은 1시간 단위(정수)로 입력해주세요.");
+      setError("목표 시간은 1시간 단위로 입력해주세요.");
       return;
     }
     if (n < 0) {
