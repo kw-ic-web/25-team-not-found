@@ -7,7 +7,7 @@ import CalenderBlock from "./CalenderBlock";
  */
 const ColoredCalender = ({ list }) => {
   return (
-    <div className="grid grid-cols-7 grid-rows-5 gap-x-[6px] gap-y-[4px]">
+    <div className="grid grid-cols-7 grid-rows-5 gap-x-[10px] gap-y-[4px]">
       {list.map((item, index) => (
         <CalenderBlock key={index} type={item}></CalenderBlock>
       ))}
