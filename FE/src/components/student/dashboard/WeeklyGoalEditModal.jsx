@@ -30,10 +30,7 @@ const WeeklyGoalEditModal = ({ open, onClose, currentTarget, api, onSaved }) => 
       setSaving(true);
       setError("");
 
-      // PUT /users/goal  { weekly_goal: 10 }
       const res = await api.put("/users/goal", { weekly_goal: n });
-
-      // 응답: { weekly_goal_hours: 10 }
       const updated = Number(res?.data?.weekly_goal_hours ?? n);
 
       onSaved?.(Number.isFinite(updated) ? updated : n);
@@ -75,11 +72,13 @@ const WeeklyGoalEditModal = ({ open, onClose, currentTarget, api, onSaved }) => 
               step={0.5}
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
-              className="w-full h-[44px] px-[12px] rounded-[10px] border border-[#E2E8F0] focus:outline-none focus:border-[#13A4EC]"
+              className="flex-1 h-[44px] px-[12px] rounded-[10px] border border-[#E2E8F0] focus:outline-none focus:border-[#13A4EC]"
               disabled={saving}
               placeholder="예) 5"
             />
-            <span className="text-[14px] text-[#0F172A]">시간</span>
+            <span className="text-[14px] text-[#0F172A] whitespace-nowrap min-w-[28px]">
+              시간
+            </span>
           </div>
 
           {error && <p className="mt-[10px] text-[12px] text-[#DC2626]">{error}</p>}
