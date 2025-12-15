@@ -8,9 +8,12 @@ import api from "../api/api";
 import SectionList from "../components/editor/SectionList";
 import Dialog from "@mui/material/Dialog";
 import TeacherQuiz from "./TeacherQuiz";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function TeacherBook() {
+  const navigate = useNavigate();
+  const [saveError, setSaveError] = useState("");
+
   const location = useLocation();
   const {
     textbookId = 1,
@@ -214,14 +217,15 @@ export default function TeacherBook() {
         });
       }
       console.log("저장 완료");
+      navigate("/teacher");
       // setStatus("저장 완료");
     } catch (error) {
       console.error("저장 실패:", error);
       if (error.response) {
         console.error("응답 데이터:", error.response.data);
         console.error("상태 코드:", error.response.status);
-      }
-      // setStatus("저장 실패");
+      } // setStatus("저장 실패");
+      setSaveError("저장 실패하였습니다.");
     }
   };
 
@@ -343,6 +347,13 @@ export default function TeacherBook() {
                 onClick={handleSave}
               >
                 저장
+              </button>
+
+              <button
+                className="px-3 py-2 rounded-md bg-slate-200 text-slate-800 text-sm hover:bg-slate-300 focus:outline-none"
+                onClick={() => navigate("/teacher")}
+              >
+                대시보드
               </button>
             </div>
           </div>
