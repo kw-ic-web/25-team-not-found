@@ -211,7 +211,7 @@ const StudentDashboard = () => {
               )
             }
           >
-            <div className="flex flex-col gap-[12px] flex-1 min-h-0 h-full">
+            <div className="flex flex-col gap-[12px]">
               {previewTextbooks.map((tb) => (
                 <div key={tb.id} className="w-full">
                   <ProgressOfBookItem
@@ -226,11 +226,9 @@ const StudentDashboard = () => {
                 <p className="text-[12px] text-[#64748B]">수강 중인 교재가 없습니다.</p>
               )}
               {extraCount > 0 && (
-                <div className="mt-auto pt-[4px]">
-                  <span className="inline-flex items-center px-[10px] py-[6px] rounded-full bg-[#F1F5F9] text-[12px] text-[#475569]">
-                    외 {extraCount}개의 교재가 더 있습니다.
-                  </span>
-                </div>
+                <span className="inline-flex items-center px-[10px] py-[6px] rounded-full bg-[#F1F5F9] text-[12px] text-[#475569] self-start">
+                  외 {extraCount}개의 교재가 더 있습니다.
+                </span>
               )}
             </div>
           </RoundedBlock>
