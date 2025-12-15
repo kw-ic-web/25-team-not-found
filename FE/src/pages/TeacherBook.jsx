@@ -8,21 +8,23 @@ import api from "../api/api";
 import SectionList from "../components/editor/SectionList";
 import Dialog from "@mui/material/Dialog";
 import TeacherQuiz from "./TeacherQuiz";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 export default function TeacherBook() {
   const location = useLocation();
-  const { textbookId = 1, latestVersion = 1 } = location.state || {};
-  
-  const navigate = useNavigate();
-  const [saveError, setSaveError] = useState("");
+  const {
+    textbookId = 1,
+    latestVersion = 1,
+    title: stateTitle,
+    textbookTitle,
+  } = location.state || {};
 
   const [pages, setPages] = useState([]);
   const [currentId, setCurrentId] = useState(null);
   const [quizzesByPage, setQuizzesByPage] = useState({}); // page_id -> quizzes[]
 
   // 에디터 상태
-  const [title, setTitle] = useState("새 교재");
+  const [title, setTitle] = useState("");
   const [preview, setPreview] = useState(false);
   // const [status, setStatus] = useState("임시 저장됨");
 
@@ -36,6 +38,30 @@ export default function TeacherBook() {
 
   // 페이지 목록 로드
   useEffect(() => {
+    (async () => {
+      // 1. location.state에서 제목이 있으면 사용 (기존 교재)
+      if (stateTitle || textbookTitle) {
+        setTitle(stateTitle || textbookTitle);
+        return;
+      }
+
+      // 2. /textbooks/mine에서 해당 교재 찾기
+      try {
+        const { data: textbooks } = await api.get("/textbooks/mine");
+        const foundTextbook = textbooks?.find((t) => String(t.textbook_id) === String(textbookId));
+        if (foundTextbook?.title) {
+          // 제목이 있으면 사용 (기존 교재이거나 새로 만든 교재)
+          setTitle(foundTextbook.title);
+          return;
+        }
+      } catch (error) {
+        console.error("ERROR: load textbooks list failed", error);
+      }
+
+      // 3. 둘 다 실패하면 빈 문자열 유지 (사용자가 직접 입력할 수 있도록)
+      // 새 교재를 만들었을 때는 API에서 "새 교재"를 반환하므로 위에서 처리됨
+    })();
+
     (async () => {
       try {
         // response: { page_id, page_number, content }
@@ -58,7 +84,7 @@ export default function TeacherBook() {
         setIsInitialLoad(false);
       }
     })();
-  }, [latestVersion, textbookId]);
+  }, [latestVersion, textbookId, stateTitle, textbookTitle]);
 
   // 특정 페이지의 퀴즈 목록을 로드하는 함수
   const loadQuizzesForPage = async (pageId) => {
@@ -188,7 +214,6 @@ export default function TeacherBook() {
         });
       }
       console.log("저장 완료");
-      navigate("/teacher");
       // setStatus("저장 완료");
     } catch (error) {
       console.error("저장 실패:", error);
@@ -196,7 +221,6 @@ export default function TeacherBook() {
         console.error("응답 데이터:", error.response.data);
         console.error("상태 코드:", error.response.status);
       }
-      setSaveError("저장 실패하였습니다.");
       // setStatus("저장 실패");
     }
   };
@@ -302,36 +326,23 @@ export default function TeacherBook() {
                 className="w-full text-xl font-semibold outline-none border-0 focus:outline-none focus:ring-0 text-slate-800 placeholder:text-slate-400"
                 value={title}
                 onChange={(e) => {
-                  const v = e.target.value;
-                  setTitle(v);
-                  setPages((prev) =>
-                    prev.map((s) => (s.id === currentId ? { ...s, title: v } : s))
-                  );
+                  setTitle(e.target.value);
                 }}
                 placeholder="제목을 입력하세요"
               />
             </div>
             <div className="flex items-center gap-2">
-             {saveError && <span className="text-sm text-rose-600">{saveError}</span>}
-
               <button
                 className="px-3 py-2 rounded-md text-sm hover:bg-slate-100 focus:outline-none"
                 onClick={() => setPreview((v) => !v)}
               >
                 {preview ? "편집" : "미리보기"}
               </button>
-
               <button
                 className="px-3 py-2 rounded-md bg-sky-500 text-white text-sm hover:bg-sky-600 focus:outline-none"
                 onClick={handleSave}
               >
                 저장
-              </button>
-              <button
-                className="px-3 py-2 rounded-md bg-slate-200 text-slate-800 text-sm hover:bg-slate-300 focus:outline-none"
-                onClick={() => navigate("/teacher")}
-              >
-                대시보드
               </button>
             </div>
           </div>
