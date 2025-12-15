@@ -1,6 +1,8 @@
 import RoundedBlock from "../../components/RoundedBlock";
 
 const ProgressOfBookItem = ({ title, progress = "0%", onOpen }) => {
+  const pct = Math.max(0, Math.min(100, Number.parseFloat(progress) || 0));
+
   return (
     <RoundedBlock className="p-[17px] w-full">
       <div className="flex flex-col gap-[12px]">
@@ -18,12 +20,7 @@ const ProgressOfBookItem = ({ title, progress = "0%", onOpen }) => {
           </button>
         </div>
         <div className="w-full h-[6px] bg-[#EEF2F6] rounded-full overflow-hidden">
-          <div
-            className="h-full bg-[#13A4EC]"
-            style={{
-              width: `${Math.max(0, Math.min(100, parseFloat(progress))) || 0}%`,
-            }}
-          />
+          <div className="h-full bg-[#13A4EC]" style={{ width: `${pct}%` }} />
         </div>
       </div>
     </RoundedBlock>
