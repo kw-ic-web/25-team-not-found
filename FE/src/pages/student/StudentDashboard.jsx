@@ -211,26 +211,27 @@ const StudentDashboard = () => {
               )
             }
           >
-            <div className="flex flex-col gap-[12px]">
-              {previewTextbooks.map((tb) => (
-                <div key={tb.id} className="w-full">
-                  <ProgressOfBookItem
-                    title={tb.title}
-                    progress={`${tb.progress}%`}
-                    onOpen={() => openTextbook(tb)}
-                  />
-                </div>
-              ))}
-
-              {!loading && !generalError && textbooks.length === 0 && (
-                <p className="text-[12px] text-[#64748B]">수강 중인 교재가 없습니다.</p>
-              )}
-              {extraCount > 0 && (
-                <span className="inline-flex items-center px-[10px] py-[6px] rounded-full bg-[#F1F5F9] text-[12px] text-[#475569] self-start">
-                  외 {extraCount}개의 교재가 더 있습니다.
-                </span>
-              )}
+          <div className="flex flex-col gap-[12px] flex-1 min-h-0">
+            {previewTextbooks.map((tb) => (
+              <div key={tb.id} className="w-full">
+                <ProgressOfBookItem
+                  title={tb.title}
+                  progress={`${tb.progress}%`}
+                  onOpen={() => openTextbook(tb)}
+                />
+              </div>
+            ))}
+            {!loading && !generalError && textbooks.length === 0 && (
+              <p className="text-[12px] text-[#64748B]">수강 중인 교재가 없습니다.</p>
+            )}
+          </div>
+          {extraCount > 0 && (
+            <div className="pt-[8px]">
+              <span className="inline-flex items-center px-[10px] py-[6px] rounded-full bg-[#F1F5F9] text-[12px] text-[#475569]">
+                외 {extraCount}개의 교재가 더 있습니다.
+              </span>
             </div>
+          )}
           </RoundedBlock>
 
           <RoundedBlock className="flex flex-col gap-[4px] p-[21px] w-[400px] h-[300px]" title="학습 캘린더">
