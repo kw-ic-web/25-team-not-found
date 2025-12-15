@@ -11,6 +11,7 @@ import DummyProgressBar from "../../components/DummyProgressBar";
 import ProgressOfBookItem from "../../components/student/dashboard/ProgressOfBookItem";
 import ColoredCalender from "../../components/student/dashboard/calender/ColoredCalender";
 import CalenderBlock from "../../components/student/dashboard/calender/CalenderBlock";
+import QuizScoreDistribution from "../../components/student/dashboard/QuizScoreDistribution";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import Modal from "@mui/material/Modal";
@@ -78,7 +79,6 @@ const StudentDashboard = () => {
   }, [dashboard]);
 
   const textbooks = dashboard?.textbooks || [];
-  // ✅ 2개만 “온전히” 보이게
   const previewTextbooks = textbooks.slice(0, 2);
   const extraCount = Math.max(0, textbooks.length - previewTextbooks.length);
 
@@ -169,8 +169,13 @@ const StudentDashboard = () => {
               </p>
             }
           />
-          <RoundedBlock className="flex flex-col gap-[4px] p-[21px] w-[608px] h-[282px]" title="퀴즈 점수 분포">
+          <RoundedBlock
+            className="flex flex-col gap-[4px] p-[21px] w-[608px] h-[282px]"
+            title="퀴즈 점수 분포"
+          >
             <p className="text-[12px] text-[#64748B]">최근 기간 응시 퀴즈(구간화)</p>
+
+            <QuizScoreDistribution apiQuizScores={dashboard?.charts?.quiz_scores} />
           </RoundedBlock>
         </div>
         <div className="flex justify-between">
