@@ -42,13 +42,32 @@ export const createQuiz = async (quizData, userId) => {
       await client.query("ROLLBACK");
       throw new Error("해당 페이지를 찾을 수 없습니다.");
     }
-    const pageId = pageQuery.rows[0].page_id;
+
+    const logicalPageId = pageQuery.rows[0].page_id; // = original_page_id
+
+    const recordPageRes = await client.query(
+      `SELECT p.page_id
+      FROM public.textbook_pages p
+      JOIN public.textbook_versions v ON p.version_id=v.version_id
+      WHERE v.textbook_id=$1
+        AND v.version=$2
+        AND p.original_page_id=$3
+      LIMIT 1`,
+      [textbook_id, Number(version), logicalPageId]
+    );
+
+    if (recordPageRes.rowCount === 0) {
+      await client.query("ROLLBACK");
+      throw new Error("page_id 매핑 실패: original_page_id에 해당하는 레코드(page_id)가 없습니다.");
+    }
+
+    const recordPageId = recordPageRes.rows[0].page_id;
 
     const quizRes = await client.query(
       `INSERT INTO public.quizzes (page_id, author_id, title)
-       VALUES ($1, $2, $3)
-       RETURNING quiz_id, title, created_at`,
-      [pageId, userId, title]
+      VALUES ($1, $2, $3)
+      RETURNING quiz_id, title, created_at`,
+      [recordPageId, userId, title]
     );
     const quizId = quizRes.rows[0].quiz_id;
 
@@ -95,20 +114,21 @@ export const createQuiz = async (quizData, userId) => {
 };
 
 export const getQuiz = async (page_id) => {
-  try {
-    const rows = await pool.query(
-      `SELECT q.quiz_id, q.title, q.created_at,
-              qq.question_id, qq.question_type, qq.question_content,
-              qq.options, qq.correct_answer, qq.explanation, qq.question_order
-       FROM public.quizzes q
-       LEFT JOIN public.quiz_questions qq ON qq.quiz_id = q.quiz_id
-       WHERE q.page_id = $1
-       ORDER BY qq.question_order ASC`,
-      [page_id]
-    );
-    if (rows.rowCount === 0) throw new Error("퀴즈가 없습니다.");
-    return rows.rows;
-  } catch (err) {
-    throw err;
-  }
+  const rows = await pool.query(
+    `SELECT q.quiz_id, q.title, q.created_at,
+            qq.question_id, qq.question_type, qq.question_content,
+            qq.options, qq.correct_answer, qq.explanation, qq.question_order
+     FROM public.quizzes q
+     LEFT JOIN public.quiz_questions qq ON qq.quiz_id = q.quiz_id
+     WHERE q.page_id = (
+       SELECT p.page_id
+       FROM public.textbook_pages p
+       WHERE p.original_page_id = $1
+       LIMIT 1
+     )
+     ORDER BY qq.question_order ASC`,
+    [page_id]
+  );
+  if (rows.rowCount === 0) throw new Error("퀴즈가 없습니다.");
+  return rows.rows;
 };
