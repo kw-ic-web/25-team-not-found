@@ -1,5 +1,11 @@
-import RoundedBlock from "../../components/RoundedBlock";
+import RoundedBlock from "../../RoundedBlock";
 
+/**
+ * 교재별 진도
+ * @param {string} title
+ * @param {string} progress - 완료율 (75%)
+ * @returns {JSX.Element}
+ */
 const ProgressOfBookItem = ({ title, progress = "0%", onOpen }) => {
   const pct = Math.max(0, Math.min(100, Number.parseFloat(progress) || 0));
 
