@@ -337,12 +337,6 @@ export default function TeacherBook() {
             </div>
             <div className="flex items-center gap-2">
               <button
-                className="px-3 py-2 rounded-md text-sm hover:bg-slate-100 focus:outline-none"
-                onClick={() => setPreview((v) => !v)}
-              >
-                {preview ? "편집" : "미리보기"}
-              </button>
-              <button
                 className="px-3 py-2 rounded-md bg-sky-500 text-white text-sm hover:bg-sky-600 focus:outline-none"
                 onClick={handleSave}
               >
