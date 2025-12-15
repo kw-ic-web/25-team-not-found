@@ -13,6 +13,7 @@ import ColoredCalender from "../../components/student/dashboard/calender/Colored
 import CalenderBlock from "../../components/student/dashboard/calender/CalenderBlock";
 import QuizScoreDistribution from "../../components/student/dashboard/QuizScoreDistribution";
 import WeeklyStudyTrend from "../../components/student/dashboard/WeeklyStudyTrend";
+import WeeklyGoalEditModal from "../../components/student/dashboard/WeeklyGoalEditModal";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import Modal from "@mui/material/Modal";
@@ -24,6 +25,8 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [generalError, setGeneralError] = useState("");
   const [openAllTextbooksModal, setOpenAllTextbooksModal] = useState(false);
+  const [openGoalModal, setOpenGoalModal] = useState(false);
+  const [weeklyGoalTarget, setWeeklyGoalTarget] = useState(null);
 
   useEffect(() => {
     const run = async () => {
@@ -37,8 +40,7 @@ const StudentDashboard = () => {
         if (status === 401) setGeneralError("로그인이 필요합니다. 다시 로그인해주세요.");
         else if (status >= 500)
           setGeneralError("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-        else
-          setGeneralError(err?.response?.data?.message || "대시보드 조회에 실패했습니다.");
+        else setGeneralError(err?.response?.data?.message || "대시보드 조회에 실패했습니다.");
       } finally {
         setLoading(false);
       }
@@ -48,6 +50,12 @@ const StudentDashboard = () => {
   }, []);
 
   const summary = dashboard?.summary;
+
+  useEffect(() => {
+    const t = summary?.weekly_goal?.target;
+    if (t == null) return;
+    setWeeklyGoalTarget(t);
+  }, [summary?.weekly_goal?.target]);
 
   const calendarList = useMemo(() => {
     const apiCalendar = dashboard?.calendar || [];
@@ -73,7 +81,6 @@ const StudentDashboard = () => {
 
       const level = map.get(key) ?? 0;
       const type = level <= 0 ? 0 : level === 1 ? 1 : level === 2 ? 2 : 3;
-
       list.push(type);
     }
     return list;
@@ -148,12 +155,17 @@ const StudentDashboard = () => {
           <RoundedBlock className="p-[17px] w-[296px] h-[140px]">
             <div className="flex justify-between mb-[8px]">
               <p className="text-[12px] font-semibold text-[#0F172A]">주간 학습시간 목표</p>
-              <button className="text-[12px] text-[#13A4EC] cursor-pointer">수정</button>
+              <button
+                className="text-[12px] text-[#13A4EC] cursor-pointer"
+                onClick={() => setOpenGoalModal(true)}
+              >
+                수정
+              </button>
             </div>
             <DummyProgressBar />
             <p className="mt-[8px] text-[12px] text-[#0F172A]">
               {summary?.weekly_goal
-                ? `${summary.weekly_goal.current} / ${summary.weekly_goal.target} 시간`
+                ? `${summary.weekly_goal.current} / ${weeklyGoalTarget ?? summary.weekly_goal.target} 시간`
                 : "0 / 0 시간"}
             </p>
           </RoundedBlock>
@@ -179,7 +191,6 @@ const StudentDashboard = () => {
             title="퀴즈 점수 분포"
           >
             <p className="text-[12px] text-[#64748B]">최근 기간 응시 퀴즈(구간화)</p>
-
             <QuizScoreDistribution apiQuizScores={dashboard?.charts?.quiz_scores} />
           </RoundedBlock>
         </div>
@@ -275,6 +286,26 @@ const StudentDashboard = () => {
           </div>
         </div>
       </Modal>
+      <WeeklyGoalEditModal
+        open={openGoalModal}
+        onClose={() => setOpenGoalModal(false)}
+        api={api}
+        currentTarget={weeklyGoalTarget ?? summary?.weekly_goal?.target ?? 0}
+        onSaved={(newTarget) => {
+          setWeeklyGoalTarget(newTarget);
+          setDashboard((prev) => {
+            if (!prev) return prev;
+            const cur = prev?.summary?.weekly_goal?.current ?? "0";
+            return {
+              ...prev,
+              summary: {
+                ...prev.summary,
+                weekly_goal: { current: cur, target: newTarget },
+              },
+            };
+          });
+        }}
+      />
     </main>
   );
 };
