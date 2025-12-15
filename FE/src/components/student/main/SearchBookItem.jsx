@@ -22,7 +22,12 @@ const SearchBookItem = ({ title, subject = "", term = "", textbookId }) => {
         </p>
         <DummyProgressBar />
         <div className="flex items-center gap-[8px] pt-[10px]">
-          <button className="text-[14px] text-[#13A4EC] font-semibold cursor-pointer">열기</button>
+          <button
+            className="text-[14px] text-[#13A4EC] font-semibold cursor-pointer"
+            onClick={() => navigate("/student/book", { state: { textbookId: textbookId } })}
+          >
+            열기
+          </button>
           <span className="text-[16px] text-[#64748B]">·</span>
           <button
             className="text-[14px] text-[#13A4EC] font-semibold cursor-pointer"

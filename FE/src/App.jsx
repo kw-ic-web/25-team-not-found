@@ -20,6 +20,7 @@ import StudentDashboard from "./pages/student/StudentDashboard";
 import Landing from "./pages/Landing";
 import RoleSelect from "./pages/RoleSelect";
 import Signup from "./pages/Signup";
+import StudentBook from "./pages/student/StudentBook";
 
 const router = createBrowserRouter([
   {
@@ -47,13 +48,10 @@ const router = createBrowserRouter([
             element: <Login />,
           },
 
-        
           { path: "signup", element: <Signup /> },
-          
         ],
-        
       },
-      
+
       { path: "lecture", element: <Lecture /> },
 
       {
@@ -66,6 +64,10 @@ const router = createBrowserRouter([
           {
             path: "dashboard",
             element: <StudentDashboard />,
+          },
+          {
+            path: "book",
+            element: <StudentBook />,
           },
           {
             element: <StudentDefaultLayout />,
