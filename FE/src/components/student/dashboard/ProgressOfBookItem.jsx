@@ -1,28 +1,32 @@
-import RoundedBlock from "../../RoundedBlock";
+import { twMerge } from "tailwind-merge";
 import DummyProgressBar from "../../DummyProgressBar";
 
 /**
- * 교재별 진도
- * @param {string} title - 교재 이름
- * @param {string} progress - 완료율 (75%)
- * @returns {JSX.Element}
+ * @param {string} title
+ * @param {string} progress   ex) "75%"
+ * @param {function} onOpen
  */
-const ProgressOfBookItem = ({ title, progress }) => {
+const ProgressOfBookItem = ({ title, progress, onOpen }) => {
   return (
-    <RoundedBlock className="p-[17px] w-full h-[98px]">
-      <div className="flex flex-col gap-[12px]">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-[16px] font-semibold text-[#0F172A]">{title}</p>
-            <p className="text-[12px] text-[#64748B]">{progress} 완료</p>
-          </div>
-          <button className="text-[14px] text-[#13A4EC] cursor-pointer">
-            단원 보기
-          </button>
+    <div className="flex justify-between items-start w-full p-[16px] rounded-[16px] border border-[#E2E8F0] bg-white">
+      <div className="flex flex-col gap-[6px] w-full pr-[16px]">
+        <p className="text-[16px] font-bold text-[#0F172A]">{title}</p>
+        <p className="text-[12px] text-[#64748B]">{progress} 완료</p>
+        <div className="mt-[6px]">
+          <DummyProgressBar value={Number(String(progress).replace("%", "")) || 0} />
         </div>
-        <DummyProgressBar />
       </div>
-    </RoundedBlock>
+      <button
+        type="button"
+        onClick={onOpen}
+        className={twMerge(
+          "text-[14px] text-[#13A4EC] font-semibold cursor-pointer",
+          "hover:underline"
+        )}
+      >
+        교재 열기
+      </button>
+    </div>
   );
 };
 

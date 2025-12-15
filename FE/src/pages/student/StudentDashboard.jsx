@@ -38,8 +38,7 @@ const StudentDashboard = () => {
       } catch (err) {
         const status = err?.response?.status;
         if (status === 401) setGeneralError("로그인이 필요합니다. 다시 로그인해주세요.");
-        else if (status >= 500)
-          setGeneralError("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        else if (status >= 500) setGeneralError("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
         else setGeneralError(err?.response?.data?.message || "대시보드 조회에 실패했습니다.");
       } finally {
         setLoading(false);
@@ -89,6 +88,10 @@ const StudentDashboard = () => {
   const textbooks = dashboard?.textbooks || [];
   const previewTextbooks = textbooks.slice(0, 2);
   const extraCount = Math.max(0, textbooks.length - previewTextbooks.length);
+
+  const openTextbook = (tb) => {
+    navigate("/student/book", { state: { textbookId: tb.id, title: tb.title } });
+  };
 
   return (
     <main className="flex flex-col items-center w-full min-h-screen bg-[#F6F7F8]">
@@ -186,10 +189,7 @@ const StudentDashboard = () => {
               <WeeklyStudyTrend apiWeeklyActivity={dashboard?.charts?.weekly_activity} />
             </div>
           </RoundedBlock>
-          <RoundedBlock
-            className="flex flex-col gap-[4px] p-[21px] w-[608px] h-[282px]"
-            title="퀴즈 점수 분포"
-          >
+          <RoundedBlock className="flex flex-col gap-[4px] p-[21px] w-[608px] h-[282px]" title="퀴즈 점수 분포">
             <p className="text-[12px] text-[#64748B]">최근 기간 응시 퀴즈(구간화)</p>
             <QuizScoreDistribution apiQuizScores={dashboard?.charts?.quiz_scores} />
           </RoundedBlock>
@@ -211,19 +211,22 @@ const StudentDashboard = () => {
               )
             }
           >
-            <div className="flex flex-col gap-[12px] flex-1 min-h-0">
+            <div className="flex flex-col gap-[12px] flex-1 min-h-0 h-full">
               {previewTextbooks.map((tb) => (
                 <div key={tb.id} className="w-full">
-                  <ProgressOfBookItem title={tb.title} progress={`${tb.progress}%`} />
+                  <ProgressOfBookItem
+                    title={tb.title}
+                    progress={`${tb.progress}%`}
+                    onOpen={() => openTextbook(tb)}
+                  />
                 </div>
               ))}
 
               {!loading && !generalError && textbooks.length === 0 && (
                 <p className="text-[12px] text-[#64748B]">수강 중인 교재가 없습니다.</p>
               )}
-
               {extraCount > 0 && (
-                <div className="mt-auto">
+                <div className="mt-auto pt-[4px]">
                   <span className="inline-flex items-center px-[10px] py-[6px] rounded-full bg-[#F1F5F9] text-[12px] text-[#475569]">
                     외 {extraCount}개의 교재가 더 있습니다.
                   </span>
@@ -267,11 +270,17 @@ const StudentDashboard = () => {
             {textbooks.map((tb) => (
               <div
                 key={tb.id}
-                className="cursor-pointer rounded-[16px] border border-[#E2E8F0] hover:border-[#CBD5E1] transition-all"
-                onClick={() => setOpenAllTextbooksModal(false)}
+                className="rounded-[16px] border border-[#E2E8F0] hover:border-[#CBD5E1] transition-all"
               >
                 <div className="p-[16px]">
-                  <ProgressOfBookItem title={tb.title} progress={`${tb.progress}%`} />
+                  <ProgressOfBookItem
+                    title={tb.title}
+                    progress={`${tb.progress}%`}
+                    onOpen={() => {
+                      setOpenAllTextbooksModal(false);
+                      openTextbook(tb);
+                    }}
+                  />
                 </div>
               </div>
             ))}
