@@ -240,7 +240,6 @@ export default function TeacherMain() {
                   <tr>
                     <th className="py-2 pr-3 font-bold">학생</th>
                     <th className="py-2 pr-3 font-bold">이메일</th>
-                    <th className="py-2 pr-3 font-bold">최근 수업</th>
                     <th className="py-2 pr-3 font-bold">평균 점수</th>
                     <th className="py-2 pr-3 font-bold">상태</th>
                   </tr>
@@ -250,7 +249,6 @@ export default function TeacherMain() {
                     <tr key={s.id} className="border-t border-slate-100">
                       <td className="py-2 pr-3 text-slate-900">{s.name}</td>
                       <td className="py-2 pr-3 text-slate-900">{s.email}</td>
-                      <td className="py-2 pr-3 text-slate-900">{s.recent}</td>
                       <td className="py-2 pr-3 font-semibold text-slate-900">{s.평균}%</td>
                       <td className="py-2 pr-3">
                         <StudentState state={s.상태} />
