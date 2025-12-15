@@ -226,8 +226,8 @@ const StudentDashboard = () => {
             )}
           </div>
           {extraCount > 0 && (
-            <div className="pt-[8px]">
-              <span className="inline-flex items-center px-[10px] py-[6px] rounded-full bg-[#F1F5F9] text-[12px] text-[#475569]">
+            <div className="pt-[15px]">
+              <span className="inline-flex items-center px-[10px] py-[6px] text-[12px] text-[#475569]">
                 외 {extraCount}개의 교재가 더 있습니다.
               </span>
             </div>
