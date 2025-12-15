@@ -51,8 +51,12 @@ const StudentSidebar = () => {
           Icon={Classroom}
           isActivated={activatedBtn === 2}
           onClick={() => {
-            setActivatedBtn(2);
-            setEnterClassOpen(true);
+            if (enrolledTextbooks && enrolledTextbooks.length > 0) {
+              setActivatedBtn(2);
+              setEnterClassOpen(true);
+            } else {
+              alert("수강하고 있는 교재가 없습니다.");
+            }
             // navigate("/lecture?role=student");
           }}
         >
